@@ -1,0 +1,658 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2601F0D12D20A3DE00F2EB53 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2601F0D02D20A3DE00F2EB53 /* Theme.swift */; };
+		2601F0D52D20A42F00F2EB53 /* DigitalPart.view.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2601F0D42D20A42F00F2EB53 /* DigitalPart.view.swift */; };
+		2601F0D72D20A47F00F2EB53 /* DigitalPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2601F0D62D20A47F00F2EB53 /* DigitalPanelView.swift */; };
+		2601F0D92D20A49E00F2EB53 /* DigitalPartialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2601F0D82D20A49E00F2EB53 /* DigitalPartialView.swift */; };
+		2601F0DB2D20A4D000F2EB53 /* OscillatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2601F0DA2D20A4D000F2EB53 /* OscillatorView.swift */; };
+		2601F0DD2D20A78C00F2EB53 /* WaveformPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2601F0DC2D20A78C00F2EB53 /* WaveformPicker.swift */; };
+		2601F0DF2D20B59B00F2EB53 /* PCMWaveform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2601F0DE2D20B59B00F2EB53 /* PCMWaveform.swift */; };
+		26987EAE2D1F575D003DC173 /* JD_XA_Editor_v3App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26987EAD2D1F575D003DC173 /* JD_XA_Editor_v3App.swift */; };
+		26987EB02D1F575D003DC173 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26987EAF2D1F575D003DC173 /* ContentView.swift */; };
+		26987EB22D1F575E003DC173 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 26987EB12D1F575E003DC173 /* Assets.xcassets */; };
+		26987EB52D1F575E003DC173 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 26987EB42D1F575E003DC173 /* Preview Assets.xcassets */; };
+		26987EC02D1F575E003DC173 /* JD_XA_Editor_v3Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26987EBF2D1F575E003DC173 /* JD_XA_Editor_v3Tests.swift */; };
+		26987ECA2D1F575E003DC173 /* JD_XA_Editor_v3UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26987EC92D1F575E003DC173 /* JD_XA_Editor_v3UITests.swift */; };
+		26987ECC2D1F575E003DC173 /* JD_XA_Editor_v3UITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26987ECB2D1F575E003DC173 /* JD_XA_Editor_v3UITestsLaunchTests.swift */; };
+		26987ED92D1F60D0003DC173 /* JDXASysEx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26987ED82D1F60D0003DC173 /* JDXASysEx.swift */; };
+		26987EDB2D1F6163003DC173 /* JDXATestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26987EDA2D1F6163003DC173 /* JDXATestView.swift */; };
+		26987EDD2D1F617D003DC173 /* MIDIManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26987EDC2D1F617D003DC173 /* MIDIManager.swift */; };
+		26987EDF2D1F78A1003DC173 /* DOscWaveform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26987EDE2D1F78A1003DC173 /* DOscWaveform.swift */; };
+		26D4B82F2D2215FB00C40434 /* DialKnob.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26D4B82E2D2215FB00C40434 /* DialKnob.swift */; };
+		26D4B8312D22162100C40434 /* VerticalSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26D4B8302D22162100C40434 /* VerticalSlider.swift */; };
+		26D50C642D22AC0A00DFE13D /* LFOShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26D50C632D22AC0A00DFE13D /* LFOShape.swift */; };
+		26D50C662D22AC2600DFE13D /* LFOView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26D50C652D22AC2600DFE13D /* LFOView.swift */; };
+		26E11AD02D23519A00F565B8 /* ModLFOView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E11ACF2D23519A00F565B8 /* ModLFOView.swift */; };
+		26E11AD22D2351C200F565B8 /* LFOContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E11AD12D2351C200F565B8 /* LFOContainerView.swift */; };
+		26E11AD42D23579300F565B8 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E11AD32D23579300F565B8 /* Constants.swift */; };
+		26E11AD62D235DD500F565B8 /* MIDIParameters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E11AD52D235DD500F565B8 /* MIDIParameters.swift */; };
+		26E11AD82D23610E00F565B8 /* MIDIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E11AD72D23610E00F565B8 /* MIDIService.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		26987EBC2D1F575E003DC173 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 26987EA22D1F575D003DC173 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 26987EA92D1F575D003DC173;
+			remoteInfo = "JD-XA Editor v3";
+		};
+		26987EC62D1F575E003DC173 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 26987EA22D1F575D003DC173 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 26987EA92D1F575D003DC173;
+			remoteInfo = "JD-XA Editor v3";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		2601F0D02D20A3DE00F2EB53 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Theme.swift; path = Views/DigitalPanel/Theme.swift; sourceTree = "<group>"; };
+		2601F0D42D20A42F00F2EB53 /* DigitalPart.view.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DigitalPart.view.swift; path = Views/DigitalPanel/DigitalPart.view.swift; sourceTree = "<group>"; };
+		2601F0D62D20A47F00F2EB53 /* DigitalPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DigitalPanelView.swift; path = Views/DigitalPanel/DigitalPanelView.swift; sourceTree = "<group>"; };
+		2601F0D82D20A49E00F2EB53 /* DigitalPartialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DigitalPartialView.swift; path = Views/DigitalPanel/DigitalPartialView.swift; sourceTree = "<group>"; };
+		2601F0DA2D20A4D000F2EB53 /* OscillatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OscillatorView.swift; path = Views/DigitalPanel/Components/OscillatorView.swift; sourceTree = "<group>"; };
+		2601F0DC2D20A78C00F2EB53 /* WaveformPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WaveformPicker.swift; path = Views/DigitalPanel/Components/WaveformPicker.swift; sourceTree = "<group>"; };
+		2601F0DE2D20B59B00F2EB53 /* PCMWaveform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PCMWaveform.swift; path = Models/PCMWaveform.swift; sourceTree = "<group>"; };
+		26987EAA2D1F575D003DC173 /* JD-XA Editor v3.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "JD-XA Editor v3.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		26987EAD2D1F575D003DC173 /* JD_XA_Editor_v3App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JD_XA_Editor_v3App.swift; sourceTree = "<group>"; };
+		26987EAF2D1F575D003DC173 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		26987EB12D1F575E003DC173 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		26987EB42D1F575E003DC173 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		26987EB62D1F575E003DC173 /* JD_XA_Editor_v3.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = JD_XA_Editor_v3.entitlements; sourceTree = "<group>"; };
+		26987EBB2D1F575E003DC173 /* JD-XA Editor v3Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "JD-XA Editor v3Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		26987EBF2D1F575E003DC173 /* JD_XA_Editor_v3Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JD_XA_Editor_v3Tests.swift; sourceTree = "<group>"; };
+		26987EC52D1F575E003DC173 /* JD-XA Editor v3UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "JD-XA Editor v3UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		26987EC92D1F575E003DC173 /* JD_XA_Editor_v3UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JD_XA_Editor_v3UITests.swift; sourceTree = "<group>"; };
+		26987ECB2D1F575E003DC173 /* JD_XA_Editor_v3UITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JD_XA_Editor_v3UITestsLaunchTests.swift; sourceTree = "<group>"; };
+		26987ED82D1F60D0003DC173 /* JDXASysEx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JDXASysEx.swift; sourceTree = "<group>"; };
+		26987EDA2D1F6163003DC173 /* JDXATestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JDXATestView.swift; sourceTree = "<group>"; };
+		26987EDC2D1F617D003DC173 /* MIDIManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MIDIManager.swift; sourceTree = "<group>"; };
+		26987EDE2D1F78A1003DC173 /* DOscWaveform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DOscWaveform.swift; sourceTree = "<group>"; };
+		26D4B82E2D2215FB00C40434 /* DialKnob.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialKnob.swift; sourceTree = "<group>"; };
+		26D4B8302D22162100C40434 /* VerticalSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerticalSlider.swift; sourceTree = "<group>"; };
+		26D50C632D22AC0A00DFE13D /* LFOShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LFOShape.swift; path = Views/LFO/LFOShape.swift; sourceTree = "<group>"; };
+		26D50C652D22AC2600DFE13D /* LFOView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LFOView.swift; path = Views/LFO/LFOView.swift; sourceTree = "<group>"; };
+		26E11ACF2D23519A00F565B8 /* ModLFOView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ModLFOView.swift; path = Views/LFO/ModLFOView.swift; sourceTree = "<group>"; };
+		26E11AD12D2351C200F565B8 /* LFOContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LFOContainerView.swift; path = Views/LFO/LFOContainerView.swift; sourceTree = "<group>"; };
+		26E11AD32D23579300F565B8 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		26E11AD52D235DD500F565B8 /* MIDIParameters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MIDIParameters.swift; path = Models/MIDIParameters.swift; sourceTree = "<group>"; };
+		26E11AD72D23610E00F565B8 /* MIDIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MIDIService.swift; path = Services/MIDIService.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		26987EA72D1F575D003DC173 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		26987EB82D1F575E003DC173 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		26987EC22D1F575E003DC173 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		26987EA12D1F575D003DC173 = {
+			isa = PBXGroup;
+			children = (
+				26987EAC2D1F575D003DC173 /* JD-XA Editor v3 */,
+				26987EBE2D1F575E003DC173 /* JD-XA Editor v3Tests */,
+				26987EC82D1F575E003DC173 /* JD-XA Editor v3UITests */,
+				26987EAB2D1F575D003DC173 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		26987EAB2D1F575D003DC173 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				26987EAA2D1F575D003DC173 /* JD-XA Editor v3.app */,
+				26987EBB2D1F575E003DC173 /* JD-XA Editor v3Tests.xctest */,
+				26987EC52D1F575E003DC173 /* JD-XA Editor v3UITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		26987EAC2D1F575D003DC173 /* JD-XA Editor v3 */ = {
+			isa = PBXGroup;
+			children = (
+				26E11AD32D23579300F565B8 /* Constants.swift */,
+				26987EAD2D1F575D003DC173 /* JD_XA_Editor_v3App.swift */,
+				26987EAF2D1F575D003DC173 /* ContentView.swift */,
+				26987EDE2D1F78A1003DC173 /* DOscWaveform.swift */,
+				26987ED82D1F60D0003DC173 /* JDXASysEx.swift */,
+				26987EDA2D1F6163003DC173 /* JDXATestView.swift */,
+				26987EDC2D1F617D003DC173 /* MIDIManager.swift */,
+				26E11AD52D235DD500F565B8 /* MIDIParameters.swift */,
+				26E11AD72D23610E00F565B8 /* MIDIService.swift */,
+				2601F0D02D20A3DE00F2EB53 /* Theme.swift */,
+				2601F0D62D20A47F00F2EB53 /* DigitalPanelView.swift */,
+				2601F0D42D20A42F00F2EB53 /* DigitalPart.view.swift */,
+				2601F0D82D20A49E00F2EB53 /* DigitalPartialView.swift */,
+				26E11AD12D2351C200F565B8 /* LFOContainerView.swift */,
+				26D50C632D22AC0A00DFE13D /* LFOShape.swift */,
+				26D50C652D22AC2600DFE13D /* LFOView.swift */,
+				26E11ACF2D23519A00F565B8 /* ModLFOView.swift */,
+				2601F0DA2D20A4D000F2EB53 /* OscillatorView.swift */,
+				2601F0DC2D20A78C00F2EB53 /* WaveformPicker.swift */,
+				2601F0DE2D20B59B00F2EB53 /* PCMWaveform.swift */,
+				26D4B82E2D2215FB00C40434 /* DialKnob.swift */,
+				26D4B8302D22162100C40434 /* VerticalSlider.swift */,
+				26987EB32D1F575E003DC173 /* Preview Content */,
+				26987EB12D1F575E003DC173 /* Assets.xcassets */,
+				26987EB62D1F575E003DC173 /* JD_XA_Editor_v3.entitlements */,
+			);
+			path = "JD-XA Editor v3";
+			sourceTree = "<group>";
+		};
+		26987EB32D1F575E003DC173 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				26987EB42D1F575E003DC173 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		26987EBE2D1F575E003DC173 /* JD-XA Editor v3Tests */ = {
+			isa = PBXGroup;
+			children = (
+				26987EBF2D1F575E003DC173 /* JD_XA_Editor_v3Tests.swift */,
+			);
+			path = "JD-XA Editor v3Tests";
+			sourceTree = "<group>";
+		};
+		26987EC82D1F575E003DC173 /* JD-XA Editor v3UITests */ = {
+			isa = PBXGroup;
+			children = (
+				26987EC92D1F575E003DC173 /* JD_XA_Editor_v3UITests.swift */,
+				26987ECB2D1F575E003DC173 /* JD_XA_Editor_v3UITestsLaunchTests.swift */,
+			);
+			path = "JD-XA Editor v3UITests";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		26987EA92D1F575D003DC173 /* JD-XA Editor v3 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 26987ECF2D1F575E003DC173 /* Build configuration list for PBXNativeTarget "JD-XA Editor v3" */;
+			buildPhases = (
+				26987EA62D1F575D003DC173 /* Sources */,
+				26987EA72D1F575D003DC173 /* Frameworks */,
+				26987EA82D1F575D003DC173 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "JD-XA Editor v3";
+			productName = "JD-XA Editor v3";
+			productReference = 26987EAA2D1F575D003DC173 /* JD-XA Editor v3.app */;
+			productType = "com.apple.product-type.application";
+		};
+		26987EBA2D1F575E003DC173 /* JD-XA Editor v3Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 26987ED22D1F575E003DC173 /* Build configuration list for PBXNativeTarget "JD-XA Editor v3Tests" */;
+			buildPhases = (
+				26987EB72D1F575E003DC173 /* Sources */,
+				26987EB82D1F575E003DC173 /* Frameworks */,
+				26987EB92D1F575E003DC173 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				26987EBD2D1F575E003DC173 /* PBXTargetDependency */,
+			);
+			name = "JD-XA Editor v3Tests";
+			productName = "JD-XA Editor v3Tests";
+			productReference = 26987EBB2D1F575E003DC173 /* JD-XA Editor v3Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		26987EC42D1F575E003DC173 /* JD-XA Editor v3UITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 26987ED52D1F575E003DC173 /* Build configuration list for PBXNativeTarget "JD-XA Editor v3UITests" */;
+			buildPhases = (
+				26987EC12D1F575E003DC173 /* Sources */,
+				26987EC22D1F575E003DC173 /* Frameworks */,
+				26987EC32D1F575E003DC173 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				26987EC72D1F575E003DC173 /* PBXTargetDependency */,
+			);
+			name = "JD-XA Editor v3UITests";
+			productName = "JD-XA Editor v3UITests";
+			productReference = 26987EC52D1F575E003DC173 /* JD-XA Editor v3UITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		26987EA22D1F575D003DC173 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1520;
+				LastUpgradeCheck = 1520;
+				TargetAttributes = {
+					26987EA92D1F575D003DC173 = {
+						CreatedOnToolsVersion = 15.2;
+					};
+					26987EBA2D1F575E003DC173 = {
+						CreatedOnToolsVersion = 15.2;
+						TestTargetID = 26987EA92D1F575D003DC173;
+					};
+					26987EC42D1F575E003DC173 = {
+						CreatedOnToolsVersion = 15.2;
+						TestTargetID = 26987EA92D1F575D003DC173;
+					};
+				};
+			};
+			buildConfigurationList = 26987EA52D1F575D003DC173 /* Build configuration list for PBXProject "JD-XA Editor v3" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 26987EA12D1F575D003DC173;
+			productRefGroup = 26987EAB2D1F575D003DC173 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				26987EA92D1F575D003DC173 /* JD-XA Editor v3 */,
+				26987EBA2D1F575E003DC173 /* JD-XA Editor v3Tests */,
+				26987EC42D1F575E003DC173 /* JD-XA Editor v3UITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		26987EA82D1F575D003DC173 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				26987EB52D1F575E003DC173 /* Preview Assets.xcassets in Resources */,
+				26987EB22D1F575E003DC173 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		26987EB92D1F575E003DC173 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		26987EC32D1F575E003DC173 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		26987EA62D1F575D003DC173 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				26E11AD82D23610E00F565B8 /* MIDIService.swift in Sources */,
+				2601F0D52D20A42F00F2EB53 /* DigitalPart.view.swift in Sources */,
+				2601F0DB2D20A4D000F2EB53 /* OscillatorView.swift in Sources */,
+				26E11AD22D2351C200F565B8 /* LFOContainerView.swift in Sources */,
+				26D4B8312D22162100C40434 /* VerticalSlider.swift in Sources */,
+				26987ED92D1F60D0003DC173 /* JDXASysEx.swift in Sources */,
+				26987EDF2D1F78A1003DC173 /* DOscWaveform.swift in Sources */,
+				2601F0DD2D20A78C00F2EB53 /* WaveformPicker.swift in Sources */,
+				26E11AD62D235DD500F565B8 /* MIDIParameters.swift in Sources */,
+				26987EB02D1F575D003DC173 /* ContentView.swift in Sources */,
+				26987EAE2D1F575D003DC173 /* JD_XA_Editor_v3App.swift in Sources */,
+				2601F0DF2D20B59B00F2EB53 /* PCMWaveform.swift in Sources */,
+				2601F0D92D20A49E00F2EB53 /* DigitalPartialView.swift in Sources */,
+				26987EDB2D1F6163003DC173 /* JDXATestView.swift in Sources */,
+				26E11AD02D23519A00F565B8 /* ModLFOView.swift in Sources */,
+				26D50C642D22AC0A00DFE13D /* LFOShape.swift in Sources */,
+				26D50C662D22AC2600DFE13D /* LFOView.swift in Sources */,
+				26E11AD42D23579300F565B8 /* Constants.swift in Sources */,
+				2601F0D72D20A47F00F2EB53 /* DigitalPanelView.swift in Sources */,
+				26987EDD2D1F617D003DC173 /* MIDIManager.swift in Sources */,
+				2601F0D12D20A3DE00F2EB53 /* Theme.swift in Sources */,
+				26D4B82F2D2215FB00C40434 /* DialKnob.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		26987EB72D1F575E003DC173 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				26987EC02D1F575E003DC173 /* JD_XA_Editor_v3Tests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		26987EC12D1F575E003DC173 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				26987ECA2D1F575E003DC173 /* JD_XA_Editor_v3UITests.swift in Sources */,
+				26987ECC2D1F575E003DC173 /* JD_XA_Editor_v3UITestsLaunchTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		26987EBD2D1F575E003DC173 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 26987EA92D1F575D003DC173 /* JD-XA Editor v3 */;
+			targetProxy = 26987EBC2D1F575E003DC173 /* PBXContainerItemProxy */;
+		};
+		26987EC72D1F575E003DC173 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 26987EA92D1F575D003DC173 /* JD-XA Editor v3 */;
+			targetProxy = 26987EC62D1F575E003DC173 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		26987ECD2D1F575E003DC173 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.6;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		26987ECE2D1F575E003DC173 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.6;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		26987ED02D1F575E003DC173 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "JD-XA Editor v3/JD_XA_Editor_v3.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"JD-XA Editor v3/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "PaleSkinnySwede.JD-XA-Editor-v3";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		26987ED12D1F575E003DC173 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "JD-XA Editor v3/JD_XA_Editor_v3.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"JD-XA Editor v3/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "PaleSkinnySwede.JD-XA-Editor-v3";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		26987ED32D1F575E003DC173 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "PaleSkinnySwede.JD-XA-Editor-v3Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/JD-XA Editor v3.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/JD-XA Editor v3";
+			};
+			name = Debug;
+		};
+		26987ED42D1F575E003DC173 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "PaleSkinnySwede.JD-XA-Editor-v3Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/JD-XA Editor v3.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/JD-XA Editor v3";
+			};
+			name = Release;
+		};
+		26987ED62D1F575E003DC173 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "PaleSkinnySwede.JD-XA-Editor-v3UITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = "JD-XA Editor v3";
+			};
+			name = Debug;
+		};
+		26987ED72D1F575E003DC173 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "PaleSkinnySwede.JD-XA-Editor-v3UITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = "JD-XA Editor v3";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		26987EA52D1F575D003DC173 /* Build configuration list for PBXProject "JD-XA Editor v3" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				26987ECD2D1F575E003DC173 /* Debug */,
+				26987ECE2D1F575E003DC173 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		26987ECF2D1F575E003DC173 /* Build configuration list for PBXNativeTarget "JD-XA Editor v3" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				26987ED02D1F575E003DC173 /* Debug */,
+				26987ED12D1F575E003DC173 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		26987ED22D1F575E003DC173 /* Build configuration list for PBXNativeTarget "JD-XA Editor v3Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				26987ED32D1F575E003DC173 /* Debug */,
+				26987ED42D1F575E003DC173 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		26987ED52D1F575E003DC173 /* Build configuration list for PBXNativeTarget "JD-XA Editor v3UITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				26987ED62D1F575E003DC173 /* Debug */,
+				26987ED72D1F575E003DC173 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 26987EA22D1F575D003DC173 /* Project object */;
+}
