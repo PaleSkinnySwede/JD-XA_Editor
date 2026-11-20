@@ -55,10 +55,44 @@ class JDXATestViewModel: ObservableObject {
         logMessage("Changed HPF Cutoff: \(sysEx.messageToHexString(message))")
     }
     
+    func sendBasicWaveform() {
+        let messages = sysEx.changeDigitalOscWaveform(
+            to: selectedBasicWaveform,
+            variation: selectedWaveformVariation
+        )
+        sendSpaced(messages, labels: ["basic waveform", "variation", "clear wave number"])
+    }
+
+    func sendSuperNaturalWaveform() {
+        let messages = sysEx.changeSuperNaturalWaveform(to: selectedSuperNaturalWave)
+        sendSpaced(messages, labels: ["PCM mode", "variation", "wave number"])
+    }
+
+    /// Sends messages 50 ms apart so the synth can keep up.
+    private func sendSpaced(_ messages: [[UInt8]], labels: [String], index: Int = 0) {
+        guard index < messages.count else { return }
+        midiManager.sendPacket(messages[index])
+        let label = index < labels.count ? labels[index] : "message \(index + 1)"
+        logMessage("Sent \(label): \(sysEx.messageToHexString(messages[index]))")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            self.sendSpaced(messages, labels: labels, index: index + 1)
+        }
+    }
+
+    private static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss.SSS"
+        return formatter
+    }()
+
+    func clearLog() {
+        messageLog.removeAll()
+    }
+
     func logMessage(_ message: String) {
         DispatchQueue.main.async {
-            let timestamp = Date().timeIntervalSince1970
-            let logEntry = "\(timestamp): \(message)"
+            let timestamp = Self.timeFormatter.string(from: Date())
+            let logEntry = "\(timestamp)  \(message)"
             self.messageLog.insert(logEntry, at: 0)
             if self.messageLog.count > 100 {
                 self.messageLog = Array(self.messageLog.prefix(100))
@@ -67,163 +101,140 @@ class JDXATestViewModel: ObservableObject {
     }
 }
 
-// MARK: - Struct
+// MARK: - View
+
+/// Sends single test messages and shows a log of what went out.
 struct JDXATestView: View {
-    @StateObject var viewModel: JDXATestViewModel
-    
+    @ObservedObject var viewModel: JDXATestViewModel
+
+    private var isConnected: Bool { viewModel.selectedDeviceID != nil }
+
     var body: some View {
-        VStack(spacing: 20) {
-            // MIDI Device Selection
-            GroupBox("MIDI Device") {
-                Picker("MIDI Device", selection: $viewModel.selectedDeviceID) {
-                    Text("Select Device").tag(nil as Int?)
-                    ForEach(viewModel.availableDevices, id: \.id) { device in
-                        Text(device.name).tag(device.id as Int?)
+        HStack(alignment: .top, spacing: 12) {
+            ScrollView {
+                VStack(spacing: 12) {
+                    if !isConnected {
+                        Label("No MIDI output selected. Choose one in the sidebar to send messages.",
+                              systemImage: "cable.connector.slash")
+                            .font(.callout)
+                            .foregroundColor(ThemeColors.secondaryText)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(12)
+                            .background(ThemeColors.disconnected.opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
                     }
-                }
-                .pickerStyle(.menu)
-                
-                Button("Send Device Inquiry") {
-                    viewModel.sendDeviceInquiry()
-                }
-                .disabled(viewModel.selectedDeviceID == nil)
-            }
-            .padding()
-            
-            // Parameter Controls
-            GroupBox("Parameter Test") {
-                VStack(spacing: 15) {
-                    // Digital OSC Waveform Section
-                    GroupBox("Digital OSC Waveforms") {
-                        VStack(alignment: .leading, spacing: 10) {
-                            // Basic Waveforms
-                            VStack(alignment: .leading) {
-                                Text("Basic Waveforms")
-                                    .font(.caption)
+
+                    SectionCard("Oscillator Waveform", systemImage: "waveform.path", tint: SectionTint.osc) {
+                        VStack(alignment: .leading, spacing: 14) {
+                            ControlGroupBox("Basic waveform") {
                                 HStack {
-                                    Picker("Basic Waveform", selection: $viewModel.selectedBasicWaveform) {
+                                    Picker("Waveform", selection: $viewModel.selectedBasicWaveform) {
                                         ForEach(DOscWaveform.allCases, id: \.self) { waveform in
                                             Text(waveform.name).tag(waveform)
                                         }
                                     }
-                                    
+                                    .labelsHidden()
                                     Picker("Variation", selection: $viewModel.selectedWaveformVariation) {
                                         ForEach(WaveformVariation.allCases, id: \.self) { variation in
                                             Text(variation.name).tag(variation)
                                         }
                                     }
-                                    .frame(width: 70)  // Make the variation picker more compact
-                                }
-                                Button("Send Basic Waveform") {
-                                    let messages = viewModel.sysEx.changeDigitalOscWaveform(
-                                        to: viewModel.selectedBasicWaveform,
-                                        variation: viewModel.selectedWaveformVariation
-                                    )
-                                    
-                                    // Send first message (set basic waveform)
-                                    viewModel.midiManager.sendPacket(messages[0])
-                                    viewModel.logMessage("Sent basic waveform message: \(viewModel.sysEx.messageToHexString(messages[0]))")
-                                    
-                                    // Small delay then send second message (set variation)
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                                        viewModel.midiManager.sendPacket(messages[1])
-                                        viewModel.logMessage("Sent variation message: \(viewModel.sysEx.messageToHexString(messages[1]))")
-                                        
-                                        // Small delay then send third message (clear wave number)
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                                            viewModel.midiManager.sendPacket(messages[2])
-                                            viewModel.logMessage("Sent clear wave number message: \(viewModel.sysEx.messageToHexString(messages[2]))")
-                                        }
-                                    }
+                                    .labelsHidden()
+                                    .frame(width: 70)
+                                    Spacer()
+                                    Button("Send", action: viewModel.sendBasicWaveform)
                                 }
                             }
-                            
+
                             Divider()
-                            
-                            // SuperNATURAL Waveforms
-                            VStack(alignment: .leading) {
-                                Text("SuperNATURAL Waveforms")
-                                    .font(.caption)
+
+                            ControlGroupBox("SuperNATURAL (PCM) wave") {
                                 HStack {
                                     Stepper("Wave \(viewModel.selectedSuperNaturalWave)",
-                                           value: $viewModel.selectedSuperNaturalWave,
-                                           in: 1...450)
-                                }
-                                Button("Send SuperNATURAL Waveform") {
-                                    let messages = viewModel.sysEx.changeSuperNaturalWaveform(to: viewModel.selectedSuperNaturalWave)
-                                    
-                                    // Send first message (set PCM mode)
-                                    viewModel.midiManager.sendPacket(messages[0])
-                                    viewModel.logMessage("Sent PCM mode message: \(viewModel.sysEx.messageToHexString(messages[0]))")
-                                    
-                                    // Small delay then send second message (set variation)
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                                        viewModel.midiManager.sendPacket(messages[1])
-                                        viewModel.logMessage("Sent variation message: \(viewModel.sysEx.messageToHexString(messages[1]))")
-                                        
-                                        // Small delay then send third message (set wave number)
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                                            viewModel.midiManager.sendPacket(messages[2])
-                                            viewModel.logMessage("Sent wave number message: \(viewModel.sysEx.messageToHexString(messages[2]))")
-                                        }
+                                            value: $viewModel.selectedSuperNaturalWave,
+                                            in: MIDIService.pcmWaveRange)
+                                        .monospacedDigit()
+                                    if let wave = PCMWaveDatabase.findWave(id: viewModel.selectedSuperNaturalWave) {
+                                        Text(wave.name)
+                                            .foregroundColor(ThemeColors.secondaryText)
+                                            .lineLimit(1)
                                     }
+                                    Spacer()
+                                    Button("Send", action: viewModel.sendSuperNaturalWaveform)
                                 }
                             }
                         }
                     }
-                    
-                    Divider()
-                    
-                    // Reverb Type
-                    VStack(alignment: .leading) {
-                        Text("Reverb Type")
-                            .font(.caption)
-                        HStack {
-                            Slider(value: $viewModel.reverbType, in: 0...6)
-                            Text("\(Int(viewModel.reverbType))")
-                                .frame(width: 40)
-                                .font(.caption.monospaced())
-                        }
-                        Button("Send Reverb Change") {
-                            viewModel.changeReverbType()
-                        }
+
+                    SectionCard("Program Reverb", systemImage: "dot.radiowaves.right", tint: SectionTint.lfo) {
+                        TestSliderRow(value: $viewModel.reverbType, range: 0...6, label: "Type",
+                                      send: viewModel.changeReverbType)
                     }
-                    
-                    Divider()
-                    
-                    // HPF Cutoff
-                    VStack(alignment: .leading) {
-                        Text("HPF Cutoff")
-                            .font(.caption)
-                        HStack {
-                            Slider(value: $viewModel.hpfCutoff, in: 0...127)
-                            Text("\(Int(viewModel.hpfCutoff))")
-                                .frame(width: 40)
-                                .font(.caption.monospaced())
-                        }
-                        Button("Send HPF Change") {
-                            viewModel.changeHPFCutoff()
-                        }
+
+                    SectionCard("Digital HPF", systemImage: "line.diagonal", tint: SectionTint.filter) {
+                        TestSliderRow(value: $viewModel.hpfCutoff, range: 0...127, label: "Cutoff",
+                                      send: viewModel.changeHPFCutoff)
                     }
                 }
+                .padding(20)
             }
-            .padding()
-            
-            // Message Log
-            GroupBox("Message Log") {
-                ScrollView {
-                    LazyVStack(alignment: .leading) {
-                        ForEach(viewModel.messageLog, id: \.self) { message in
-                            Text(message)
-                                .font(.system(.caption, design: .monospaced))
-                        }
-                    }
-                }
-                .frame(height: 200)
-            }
-            .padding()
+            .frame(minWidth: 380, idealWidth: 460, maxWidth: 520)
+
+            MessageLogView(viewModel: viewModel)
+                .padding([.vertical, .trailing], 20)
         }
-        .frame(width: 500)
-        .padding()
+        .background(ThemeColors.background)
+        .navigationTitle("MIDI Test Panel")
+        .navigationSubtitle(isConnected ? "Sending to the selected output" : "Offline")
+    }
+}
+
+private struct TestSliderRow: View {
+    @Binding var value: Double
+    let range: ClosedRange<Double>
+    let label: String
+    let send: () -> Void
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Text(label)
+                .foregroundColor(ThemeColors.secondaryText)
+                .frame(width: 50, alignment: .leading)
+            Slider(value: $value, in: range, step: 1)
+            Text("\(Int(value))")
+                .font(.system(.body, design: .monospaced))
+                .frame(width: 36, alignment: .trailing)
+            Button("Send", action: send)
+        }
+    }
+}
+
+private struct MessageLogView: View {
+    @ObservedObject var viewModel: JDXATestViewModel
+
+    var body: some View {
+        SectionCard("Message Log", systemImage: "list.bullet.rectangle", tint: ThemeColors.accent, accessory: {
+            Button("Clear", action: viewModel.clearLog)
+                .controlSize(.small)
+                .disabled(viewModel.messageLog.isEmpty)
+        }) {
+            if viewModel.messageLog.isEmpty {
+                Text("Messages you send appear here.")
+                    .foregroundColor(ThemeColors.secondaryText)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 4) {
+                        ForEach(Array(viewModel.messageLog.enumerated()), id: \.offset) { _, message in
+                            Text(message)
+                                .font(.system(size: 11, design: .monospaced))
+                                .foregroundColor(ThemeColors.text.opacity(0.85))
+                                .textSelection(.enabled)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                }
+                .frame(maxHeight: .infinity)
+            }
+        }
     }
 }

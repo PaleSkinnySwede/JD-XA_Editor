@@ -1,80 +1,69 @@
 import SwiftUI
 
+/// Every section of one partial on a single page, laid out like the
+/// synth's panel: OSC on top, FILTER and AMP, then the two LFOs.
 struct DigitalPartialView: View {
-    let partNumber: Int
-    let partialNumber: Int
-    @StateObject private var viewModel: DigitalPartialViewModel
-    @Environment(\.midiManager) private var midiManager
-    
-    init(partNumber: Int, partialNumber: Int) {
-        self.partNumber = partNumber
-        self.partialNumber = partialNumber
-        _viewModel = StateObject(wrappedValue: DigitalPartialViewModel())
-    }
-    
+    @ObservedObject var state: DigitalPartialState
+
     var body: some View {
-        VStack(spacing: ThemeMetrics.spacing) {
-            // Partial On/Off Switch
-            HStack {
-                Spacer()
-                Toggle("Partial \(partialNumber) On/Off", isOn: $viewModel.isPartialEnabled)
-                    .toggleStyle(.switch)
-                    .tint(ThemeColors.accent)
-            }
-            .padding(.horizontal)
-            
-            // Parameter Sections Tab View
-            TabView(selection: $viewModel.selectedSection) {
-                LFOContainerView()
-                    .tabItem {
-                        Text("LFO")
-                    }
-                    .tag(ParameterSection.lfo)
-                
-                // Pass the midiService to OscillatorView
-                if let midiManager = midiManager {
-                    OscillatorView(
-                        partNumber: partNumber,
-                        partialNumber: partialNumber,
-                        midiService: MIDIService(midiManager: midiManager)
-                    )
-                    .tabItem {
-                        Text("OSC")
-                    }
-                    .tag(ParameterSection.osc)
+        VStack(spacing: 12) {
+            if !state.isEnabled {
+                PartialOffBanner(partialNumber: state.partialNumber) {
+                    state.isEnabled = true
                 }
-                
-                Text("Filter Coming Soon...")
-                    .tabItem {
-                        Text("FILTER")
-                    }
-                    .tag(ParameterSection.filter)
-                
-                Text("Amp Coming Soon...")
-                    .tabItem {
-                        Text("AMP")
-                    }
-                    .tag(ParameterSection.amp)
-                
             }
+
+            OscillatorView(viewModel: state.oscillator)
+
+            AdaptivePair {
+                SectionCard("Filter", systemImage: "line.diagonal", tint: SectionTint.filter) {
+                    ComingSoonView(message: "Filter controls are coming soon")
+                }
+            } trailing: {
+                SectionCard("Amp", systemImage: "speaker.wave.2", tint: SectionTint.amp) {
+                    ComingSoonView(message: "Amp controls are coming soon")
+                }
+            }
+
+            LFOContainerView(lfo: state.lfo, modLFO: state.modLFO)
         }
-        .background(ThemeColors.background)
         .foregroundColor(ThemeColors.text)
     }
 }
 
-enum ParameterSection: String {
-    case osc, filter, amp, lfo, modlfo
-}
+private struct PartialOffBanner: View {
+    let partialNumber: Int
+    let turnOn: () -> Void
 
-class DigitalPartialViewModel: ObservableObject {
-    @Published var isPartialEnabled = true
-    @Published var selectedSection: ParameterSection = .osc
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "speaker.slash.fill")
+                .foregroundColor(ThemeColors.disconnected)
+            Text("Partial \(partialNumber) is off. You can still edit it, but you won't hear it.")
+                .font(.callout)
+                .foregroundColor(ThemeColors.secondaryText)
+            Spacer()
+            Button("Turn On", action: turnOn)
+                .controlSize(.small)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(ThemeColors.disconnected.opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .strokeBorder(ThemeColors.disconnected.opacity(0.3))
+        )
+    }
 }
 
 struct DigitalPartialView_Previews: PreviewProvider {
     static var previews: some View {
-        DigitalPartialView(partNumber: 1, partialNumber: 1)
-            .background(ThemeColors.background)
+        DigitalPartialView(state: DigitalPartialState(
+            partNumber: 1, partialNumber: 1,
+            midiService: MIDIService(midiManager: MIDIManager())
+        ))
+        .padding()
+        .frame(width: 900)
+        .background(ThemeColors.background)
     }
 }

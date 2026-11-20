@@ -9,6 +9,7 @@ struct VerticalSlider: View {
     let defaultValue: Double
     var values: [Double]? = nil // For discrete values like gain settings
     
+    @Environment(\.controlTint) private var tint
     @State private var isDragging = false
     @State private var dragStart: CGFloat = 0
     @State private var startValue: Double = 0
@@ -19,7 +20,7 @@ struct VerticalSlider: View {
         value: Binding<Double>,
         range: ClosedRange<Double>,
         step: Double = 1,
-        height: CGFloat = 150,
+        height: CGFloat = 110,
         defaultValue: Double? = nil,
         values: [Double]? = nil
     ) {
@@ -35,7 +36,7 @@ struct VerticalSlider: View {
     var body: some View {
         VStack(spacing: 4) {
             Text(formattedValue)
-                .font(.system(.body, design: .monospaced))
+                .font(.system(size: 12, weight: .medium, design: .monospaced))
                 .foregroundColor(ThemeColors.text)
                 .opacity(isDragging ? 0.7 : 1.0)
                 .scaleEffect(isDragging ? 1.2 : 1.0)
@@ -45,30 +46,43 @@ struct VerticalSlider: View {
             // Slider track
             GeometryReader { geometry in
                 ZStack(alignment: .bottom) {
+                    let handleSize: CGFloat = 12
+                    // Handle center travels between these, so it never leaves the track
+                    let travel = max(geometry.size.height - handleSize, 0)
+                    let handleY = handleSize / 2 + travel * normalizedValue
+                    let originY = handleSize / 2 + travel * fillOrigin
+                    let fillTint = isDragging ? tint.opacity(0.8) : tint
+
                     // Background track
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(ThemeColors.secondaryBackground)
+                        .fill(ThemeColors.raised)
                         .frame(width: 8)
-                    
-                    // Value track
+
+                    // Value track, from the bottom (or from zero for ± ranges)
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(isDragging ? ThemeColors.accent.opacity(0.8) : ThemeColors.accent)
-                        .frame(width: 8, height: max(geometry.size.height * normalizedValue, 0))
-                    
-                    // Handle
-                    Group {
-                        Circle()
-                            .fill(isDragging ? ThemeColors.accent.opacity(0.8) : ThemeColors.accent)
-                            .frame(width: 12, height: 12)
-                            .overlay(
-                                Circle()
-                                    .stroke(ThemeColors.background, lineWidth: 2)
-                            )
-                            .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
+                        .fill(fillTint)
+                        .frame(width: 8, height: abs(handleY - originY))
+                        .offset(y: -min(handleY, originY))
+
+                    // Zero mark for ± ranges
+                    if isBipolar {
+                        Rectangle()
+                            .fill(ThemeColors.secondaryText.opacity(0.6))
+                            .frame(width: 14, height: 1)
+                            .offset(y: -originY)
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                    .offset(y: -geometry.size.height * normalizedValue)
-                    
+
+                    // Handle
+                    Circle()
+                        .fill(fillTint)
+                        .frame(width: handleSize, height: handleSize)
+                        .overlay(
+                            Circle()
+                                .stroke(ThemeColors.secondaryBackground, lineWidth: 2)
+                        )
+                        .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
+                        .offset(y: -(handleY - handleSize / 2))
+
                     // Touch target (invisible wider area)
                     Color.clear
                         .frame(width: 30)
@@ -111,10 +125,10 @@ struct VerticalSlider: View {
             .frame(height: height)
             
             Text(title)
-                .font(.caption)
+                .font(.system(size: 10, weight: .medium))
                 .foregroundColor(ThemeColors.secondaryText)
         }
-        .frame(width: 50)
+        .frame(width: 46)
         .gesture(
             TapGesture(count: 2)
                 .onEnded {
@@ -124,6 +138,16 @@ struct VerticalSlider: View {
         .help("Drag to adjust value. Shift+drag for fine control. Double-click to reset to \(Int(defaultValue)).")
     }
     
+    /// Ranges like -63...63 fill from zero instead of from the bottom.
+    private var isBipolar: Bool {
+        values == nil && range.lowerBound < 0 && range.upperBound > 0
+    }
+
+    /// Where the fill starts, 0 (bottom) to 1 (top)
+    private var fillOrigin: Double {
+        isBipolar ? (0 - range.lowerBound) / (range.upperBound - range.lowerBound) : 0
+    }
+
     private var normalizedValue: Double {
         (value - range.lowerBound) / (range.upperBound - range.lowerBound)
     }
@@ -133,6 +157,7 @@ struct VerticalSlider: View {
             // For gain values, show + sign for positive values
             return value >= 0 ? "+\(Int(value))" : "\(Int(value))"
         }
+        if isBipolar && value > 0 { return "+\(Int(value))" }
         return "\(Int(value))"
     }
 }
