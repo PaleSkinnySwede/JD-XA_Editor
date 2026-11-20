@@ -32,8 +32,8 @@ class JDXASysEx {
         // Add data
         message.append(contentsOf: data)
         
-        // Calculate and add checksum
-        let checksum = calculateChecksum(data)
+        // Calculate and add checksum (over address + data)
+        let checksum = JDXASysEx.calculateChecksum(data)
         message.append(checksum)
         
         // Add end of SysEx
@@ -42,10 +42,17 @@ class JDXASysEx {
         return message
     }
     
-    /// Calculates checksum for Roland format: 128 - (sum of address and data % 128)
-    private func calculateChecksum(_ data: [UInt8]) -> UInt8 {
-        let sum = data.reduce(0, +)
+    /// Calculates checksum for Roland format: 128 - (sum of address and data % 128).
+    /// Sums as `Int` so large address/data sums can't overflow `UInt8`.
+    static func calculateChecksum(_ data: [UInt8]) -> UInt8 {
+        let sum = data.reduce(0) { $0 + Int($1) }
         return UInt8((128 - (sum % 128)) % 128)
+    }
+
+    /// Splits a value into `count` 4-bit nibbles, most significant first,
+    /// as the MIDI Implementation uses for multi-byte parameters (e.g. wave number).
+    static func encodeNibbles(_ value: Int, count: Int = 4) -> [UInt8] {
+        (0..<count).reversed().map { UInt8((value >> ($0 * 4)) & 0x0F) }
     }
     
     // MARK: - Common Messages
@@ -61,10 +68,14 @@ class JDXASysEx {
         ]
     }
     
-    /// Creates a DT1 message to change a parameter
+    /// Creates a DT1 message to change a single-byte parameter
     func createParameterChange(address: [UInt8], value: UInt8) -> [UInt8] {
-        let data = address + [value]
-        return buildSysExMessage(command: .dt1, data: data)
+        return createParameterChange(address: address, data: [value])
+    }
+
+    /// Creates a DT1 message to change a parameter that spans several data bytes
+    func createParameterChange(address: [UInt8], data: [UInt8]) -> [UInt8] {
+        return buildSysExMessage(command: .dt1, data: address + data)
     }
     
     /// Creates an RQ1 message to request parameter data
@@ -104,21 +115,15 @@ class JDXASysEx {
         
         // Third message: Clear SuperNATURAL wave number
         let setWaveNumberAddress: [UInt8] = [0x1A, 0x01, 0x20, 0x35]
-        let clearNibbles: [UInt8] = [0x00, 0x00, 0x00, 0x00]
-        let data = setWaveNumberAddress + clearNibbles
-        let clearWaveNumberMessage = buildSysExMessage(command: .dt1, data: data)
+        let clearWaveNumberMessage = createParameterChange(
+            address: setWaveNumberAddress,
+            data: JDXASysEx.encodeNibbles(0)
+        )
         
         return [setWaveMessage, setVariationMessage, clearWaveNumberMessage]
     }
     
     /// Changes Digital OSC 1 to a SuperNATURAL waveform (1-450)
-    // Add this new helper method first
-    func setOscWaveType(to type: Int) -> [UInt8] {
-        let address: [UInt8] = [0x1A, 0x00, 0x20, 0x00]  // Digital Part 1, OSC Wave
-        return createParameterChange(address: address, value: UInt8(type))
-    }
-
-    // Then modify this method to return single message
     func changeSuperNaturalWaveform(to waveNumber: Int) -> [[UInt8]] {
         // First message: Set OSC Wave to PCM
         let setWaveTypeAddress: [UInt8] = [0x1A, 0x01, 0x20, 0x00]
@@ -133,16 +138,10 @@ class JDXASysEx {
         
         let setWaveNumberAddress: [UInt8] = [0x1A, 0x01, 0x20, 0x35]
         
-        // Convert value to 4 nibbles (as per MIDI implementation doc format)
-        let nibbles: [UInt8] = [
-            0x00,   // Always 00
-            0x00,   // Always 00
-            UInt8((value >> 4) & 0x0F),   // Upper nibble
-            UInt8(value & 0x0F)           // Lower nibble
-        ]
-        
-        let data = setWaveNumberAddress + nibbles
-        let setWaveNumberMessage = buildSysExMessage(command: .dt1, data: data)
+        let setWaveNumberMessage = createParameterChange(
+            address: setWaveNumberAddress,
+            data: JDXASysEx.encodeNibbles(value)
+        )
         
         return [setPCMMessage, setVariationMessage, setWaveNumberMessage]
     }
@@ -182,8 +181,8 @@ extension JDXASysEx {
             return processDeviceInquiryResponse(message)
         }
         
-        // DT1 Response
-        if message.count >= 7 &&
+        // DT1 Response: 8 header bytes + 4 address + ≥1 data + checksum + F7
+        if message.count >= 14 &&
            message[1] == Constants.manufacturerId &&
            message[6] == Constants.modelId[3] &&
            message[7] == Command.dt1.rawValue {
@@ -198,15 +197,16 @@ extension JDXASysEx {
             return "Invalid Device Inquiry Response length"
         }
         
+        // F0 7E dev 06 02 41 <family 2> <number 2> <version 4> F7
         let softwareVersion = String(format: "v%d.%d.%d.%d",
-                                   message[9], message[10],
-                                   message[11], message[12])
+                                   message[10], message[11],
+                                   message[12], message[13])
         
         return "JD-XA Identity Response - Software Version: \(softwareVersion)"
     }
     
     private func processDT1Response(_ message: [UInt8]) -> String {
-        guard message.count >= 11 else {
+        guard message.count >= 14 else {
             return "Invalid DT1 Response length"
         }
         
@@ -218,33 +218,6 @@ extension JDXASysEx {
         let dataStr = data.map { String(format: "%02X", $0) }.joined(separator: " ")
         
         return "Parameter Change - Address: \(addressStr), Data: \(dataStr)"
-    }
-}
-
-extension JDXASysEx {
-    func buildPCMMessage(address: [UInt8], data: [UInt8]) -> [UInt8] {
-        var message: [UInt8] = [
-            0xF0,                     // Start of SysEx
-            Constants.manufacturerId, // Roland ID
-            Constants.deviceId,       // Device ID
-            0x00, 0x00, 0x00, 0x0F,   // Model ID
-            0x12                      // Command (DT1)
-        ]
-        
-        // Add address
-        message.append(contentsOf: address)
-        
-        // Add data bytes
-        message.append(contentsOf: data)
-        
-        // Calculate checksum
-        let checksum = calculateChecksum(address + data)
-        message.append(checksum)
-        
-        // End of SysEx
-        message.append(0xF7)
-        
-        return message
     }
 }
 
@@ -267,7 +240,7 @@ extension JDXASysEx {
         if message[1] == Constants.manufacturerId {
             let data = Array(message.dropFirst(8).dropLast(2))
             let providedChecksum = message[message.count - 2]
-            let calculatedChecksum = calculateChecksum(data)
+            let calculatedChecksum = JDXASysEx.calculateChecksum(data)
             return providedChecksum == calculatedChecksum
         }
         

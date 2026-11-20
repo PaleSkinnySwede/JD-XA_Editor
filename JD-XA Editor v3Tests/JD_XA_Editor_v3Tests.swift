@@ -8,29 +8,199 @@
 import XCTest
 @testable import JD_XA_Editor_v3
 
-final class JD_XA_Editor_v3Tests: XCTestCase {
+/// Roland DT1 header for the JD-XA: F0 41 10 00 00 00 0F 12
+private let dt1Header: [UInt8] = [0xF0, 0x41, 0x10, 0x00, 0x00, 0x00, 0x0F, 0x12]
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+// MARK: - Checksum
+
+final class ChecksumTests: XCTestCase {
+
+    func testChecksumOfKnownMessage() {
+        // Program Reverb Type = 3: 18+00+02+01+03 = 0x1E (30), 128 - 30 = 98 = 0x62
+        XCTAssertEqual(JDXASysEx.calculateChecksum([0x18, 0x00, 0x02, 0x01, 0x03]), 0x62)
     }
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+    func testChecksumIsZeroWhenSumIsMultipleOf128() {
+        XCTAssertEqual(JDXASysEx.calculateChecksum([0x40, 0x40]), 0x00)
+        XCTAssertEqual(JDXASysEx.calculateChecksum([]), 0x00)
     }
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
+    func testChecksumDoesNotOverflowWhenSumExceeds255() {
+        // 7F*5 = 635; 635 % 128 = 123; 128 - 123 = 5. Used to trap on UInt8 overflow.
+        XCTAssertEqual(JDXASysEx.calculateChecksum([0x7F, 0x7F, 0x7F, 0x7F, 0x7F]), 0x05)
     }
 
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+    func testChecksumHighOffsetParameter() {
+        // ampKeyFollow (0x3C) on Part 1 / Partial 1 with value 0x7F:
+        // 1A+01+20+3C+7F = 246; 246 % 128 = 118; 128 - 118 = 10
+        XCTAssertEqual(JDXASysEx.calculateChecksum([0x1A, 0x01, 0x20, 0x3C, 0x7F]), 0x0A)
+    }
+}
+
+// MARK: - Message building
+
+final class MessageBuildingTests: XCTestCase {
+    let sysEx = JDXASysEx()
+
+    func testReverbTypeMessageBytes() {
+        let message = sysEx.changeProgramReverbType(to: 3)
+        XCTAssertEqual(message, dt1Header + [0x18, 0x00, 0x02, 0x01, 0x03, 0x62, 0xF7])
+        XCTAssertTrue(sysEx.validateMessage(message))
+    }
+
+    func testMultiByteParameterChange() {
+        let message = sysEx.createParameterChange(address: [0x1A, 0x01, 0x20, 0x35],
+                                                  data: [0x00, 0x01, 0x0C, 0x02])
+        // 1A+01+20+35+00+01+0C+02 = 127 -> checksum 1
+        XCTAssertEqual(message, dt1Header + [0x1A, 0x01, 0x20, 0x35, 0x00, 0x01, 0x0C, 0x02, 0x01, 0xF7])
+    }
+
+    func testParameterRequestUsesRQ1() {
+        let message = sysEx.createParameterRequest(address: [0x18, 0x00, 0x00, 0x00],
+                                                   size: [0x00, 0x00, 0x00, 0x10])
+        XCTAssertEqual(message[7], 0x11)
+        XCTAssertTrue(sysEx.validateMessage(message))
+    }
+
+    func testValidateRejectsBadChecksum() {
+        var message = sysEx.changeProgramReverbType(to: 3)
+        message[message.count - 2] = 0x00
+        XCTAssertFalse(sysEx.validateMessage(message))
+    }
+
+    func testDeviceInquiry() {
+        XCTAssertEqual(sysEx.createDeviceInquiry(), [0xF0, 0x7E, 0x7F, 0x06, 0x01, 0xF7])
+    }
+}
+
+// MARK: - Wave number nibble encoding
+
+final class WaveNumberEncodingTests: XCTestCase {
+    let sysEx = JDXASysEx()
+
+    func testNibbleEncoding() {
+        XCTAssertEqual(JDXASysEx.encodeNibbles(0), [0x00, 0x00, 0x00, 0x00])
+        XCTAssertEqual(JDXASysEx.encodeNibbles(1), [0x00, 0x00, 0x00, 0x01])
+        XCTAssertEqual(JDXASysEx.encodeNibbles(255), [0x00, 0x00, 0x0F, 0x0F])
+        XCTAssertEqual(JDXASysEx.encodeNibbles(256), [0x00, 0x01, 0x00, 0x00])
+        XCTAssertEqual(JDXASysEx.encodeNibbles(450), [0x00, 0x01, 0x0C, 0x02])
+        XCTAssertEqual(JDXASysEx.encodeNibbles(0xFFFF), [0x0F, 0x0F, 0x0F, 0x0F])
+    }
+
+    func testEveryNibbleIsAValidDataByte() {
+        for value in 0...450 {
+            XCTAssertTrue(JDXASysEx.encodeNibbles(value).allSatisfy { $0 <= 0x0F }, "value \(value)")
         }
     }
 
+    func testSuperNaturalWaveformMessages() {
+        let messages = sysEx.changeSuperNaturalWaveform(to: 450)
+        XCTAssertEqual(messages.count, 3)
+        // OSC wave = PCM (7), variation = A (0)
+        XCTAssertEqual(Array(messages[0][8...12]), [0x1A, 0x01, 0x20, 0x00, 0x07])
+        XCTAssertEqual(Array(messages[1][8...12]), [0x1A, 0x01, 0x20, 0x01, 0x00])
+        // Wave number 450 = 0x1C2
+        XCTAssertEqual(messages[2], dt1Header + [0x1A, 0x01, 0x20, 0x35, 0x00, 0x01, 0x0C, 0x02, 0x01, 0xF7])
+        messages.forEach { XCTAssertTrue(sysEx.validateMessage($0)) }
+    }
+
+    func testSuperNaturalWaveNumberIsClamped() {
+        XCTAssertEqual(Array(sysEx.changeSuperNaturalWaveform(to: 0)[2][12...15]), [0x00, 0x00, 0x00, 0x01])
+        XCTAssertEqual(Array(sysEx.changeSuperNaturalWaveform(to: 999)[2][12...15]), [0x00, 0x01, 0x0C, 0x02])
+    }
+
+    func testBasicWaveformClearsWaveNumber() {
+        let messages = sysEx.changeDigitalOscWaveform(to: .saw, variation: .a)
+        XCTAssertEqual(Array(messages[2][8...15]), [0x1A, 0x01, 0x20, 0x35, 0x00, 0x00, 0x00, 0x00])
+        messages.forEach { XCTAssertTrue(sysEx.validateMessage($0)) }
+    }
+}
+
+// MARK: - Address building
+
+final class AddressTests: XCTestCase {
+
+    private func address(part: Int, partial: Int, offset: [UInt8]) -> [UInt8] {
+        DigitalPartParameter(partNumber: part, partialNumber: partial,
+                             parameterOffset: offset, value: 0).address
+    }
+
+    func testPartialOffsets() {
+        let offset = DigitalPartParameter.ParameterAddress.oscWaveform
+        XCTAssertEqual(address(part: 1, partial: 1, offset: offset), [0x1A, 0x01, 0x20, 0x00])
+        XCTAssertEqual(address(part: 1, partial: 2, offset: offset), [0x1A, 0x01, 0x21, 0x00])
+        XCTAssertEqual(address(part: 1, partial: 3, offset: offset), [0x1A, 0x01, 0x22, 0x00])
+    }
+
+    func testParameterOffsetIsLastByte() {
+        XCTAssertEqual(address(part: 1, partial: 1, offset: DigitalPartParameter.ParameterAddress.fltHPCutoff),
+                       [0x1A, 0x01, 0x20, 0x39])
+    }
+
+    func testAllAddressBytesAreSevenBit() {
+        for part in 1...4 {
+            for partial in 1...3 {
+                let addr = address(part: part, partial: partial,
+                                   offset: DigitalPartParameter.ParameterAddress.modLfoRateCtrl)
+                XCTAssertEqual(addr.count, 4)
+                XCTAssertTrue(addr.allSatisfy { $0 <= 0x7F })
+            }
+        }
+    }
+
+    /// Known bug: `partNumber` isn't part of the address yet, so Parts 2–4 edit Part 1.
+    /// Remove the XCTExpectFailure once the real per-part base addresses are in.
+    func testEachPartHasItsOwnAddress() {
+        XCTExpectFailure("Per-part base addresses not implemented yet (see TODO.md)")
+        let offset = DigitalPartParameter.ParameterAddress.oscWaveform
+        let addresses = (1...4).map { address(part: $0, partial: 1, offset: offset) }
+        XCTAssertEqual(Set(addresses.map { $0.description }).count, 4)
+    }
+}
+
+// MARK: - Incoming message parsing
+
+final class ParsingTests: XCTestCase {
+    let sysEx = JDXASysEx()
+
+    func testParsesDT1() {
+        let message = dt1Header + [0x18, 0x00, 0x02, 0x01, 0x03, 0x62, 0xF7]
+        XCTAssertEqual(sysEx.processSysExMessage(message),
+                       "Parameter Change - Address: 18 00 02 01, Data: 03")
+    }
+
+    func testParsesMultiByteDT1() {
+        let message = sysEx.createParameterChange(address: [0x1A, 0x01, 0x20, 0x35],
+                                                  data: [0x00, 0x01, 0x0C, 0x02])
+        XCTAssertEqual(sysEx.processSysExMessage(message),
+                       "Parameter Change - Address: 1A 01 20 35, Data: 00 01 0C 02")
+    }
+
+    /// Truncated DT1 messages used to read past the end of the array and crash.
+    func testTruncatedDT1DoesNotCrash() {
+        for extra in 0...5 {
+            let message = dt1Header + Array(repeating: 0x00, count: extra) + [0xF7]
+            _ = sysEx.processSysExMessage(message)
+        }
+        XCTAssertEqual(sysEx.processSysExMessage(dt1Header + [0x1A, 0x01, 0xF7]),
+                       "Unknown SysEx message type")
+    }
+
+    func testShortRolandMessageDoesNotCrash() {
+        _ = sysEx.processSysExMessage([0xF0, 0x41, 0x10, 0x00, 0x00, 0x00, 0xF7])
+        _ = sysEx.processSysExMessage([0xF0, 0xF7])
+    }
+
+    func testParsesDeviceInquiryResponse() {
+        // F0 7E dev 06 02 41 <family 2> <number 2> <version 4> F7
+        let reply: [UInt8] = [0xF0, 0x7E, 0x10, 0x06, 0x02, 0x41,
+                              0x0E, 0x03, 0x00, 0x00,
+                              0x01, 0x02, 0x03, 0x04, 0xF7]
+        XCTAssertEqual(sysEx.processSysExMessage(reply),
+                       "JD-XA Identity Response - Software Version: v1.2.3.4")
+    }
+
+    func testRejectsNonSysEx() {
+        XCTAssertEqual(sysEx.processSysExMessage([0x90, 0x40, 0x7F]), "Invalid SysEx message format")
+    }
 }

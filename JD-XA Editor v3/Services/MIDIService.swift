@@ -50,10 +50,17 @@ extension MIDIService {
             value: variation.rawValue
         )
         
-        // Special handling for PCM wave number clear - it needs 4 data bytes
-        let clearPCMAddress: [UInt8] = [0x1A, 0x01, 0x20, 0x35]
-        let clearPCMData: [UInt8] = [0x00, 0x00, 0x00, 0x00]
-        let clearPCMMessage = sysEx.buildPCMMessage(address: clearPCMAddress, data: clearPCMData)
+        // PCM wave number clear - the wave number spans 4 nibble bytes
+        let clearPCMAddress = DigitalPartParameter(
+            partNumber: partNumber,
+            partialNumber: partialNumber,
+            parameterOffset: DigitalPartParameter.ParameterAddress.oscWaveNumber,
+            value: 0
+        ).address
+        let clearPCMMessage = sysEx.createParameterChange(
+            address: clearPCMAddress,
+            data: JDXASysEx.encodeNibbles(0)
+        )
         
         // Send all parameters in sequence
         sendParameterChange(waveformParam)
