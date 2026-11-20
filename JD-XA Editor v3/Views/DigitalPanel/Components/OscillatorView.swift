@@ -1,156 +1,78 @@
 import SwiftUI
 
 struct OscillatorView: View {
-    let partNumber: Int
-    let partialNumber: Int
-    @StateObject private var viewModel: OscillatorViewModel
-    
-    init(partNumber: Int, partialNumber: Int, midiService: MIDIService) {
-        self.partNumber = partNumber
-        self.partialNumber = partialNumber
-        _viewModel = StateObject(wrappedValue: OscillatorViewModel(
-            partNumber: partNumber,
-            partialNumber: partialNumber,
-            midiService: midiService
-        ))
-    }
-    
+    @ObservedObject var viewModel: OscillatorViewModel
+
     var body: some View {
-        VStack(spacing: ThemeMetrics.spacing) {
-            // Title
-            Text("Oscillator Controls")
-                .font(.headline)
-                .foregroundColor(ThemeColors.text)
-            
-            // Content area with dark background
-            VStack(spacing: ThemeMetrics.spacing * 2) {
-                // Waveform Selection
-                VStack(alignment: .leading, spacing: ThemeMetrics.spacing) {
-                    Text("Waveform")
-                        .foregroundColor(ThemeColors.secondaryText)
-                        .font(.subheadline)
-                    
-                    WaveformPicker(
-                        selectedWaveform: $viewModel.selectedWaveform,
-                        selectedVariation: $viewModel.selectedVariation,
-                        pcmWaveNumber: $viewModel.pcmWaveNumber,
-                        onWaveformUpdate: { waveform, variation in
-                            viewModel.updateWaveform(waveform: waveform, variation: variation)
-                        },
-                        onPCMUpdate: { number in
-                            viewModel.updatePCMWaveform(number: number)
-                        }
-                    )
-                }
-                
-                // Main Controls Section
-                HStack(spacing: ThemeMetrics.spacing * 3) {
-                    // Knob Controls
-                    HStack(spacing: ThemeMetrics.spacing * 2) {
-                        DialKnob(
-                            title: "Pitch",
-                            value: $viewModel.pitch,
-                            range: -24...24
-                        )
-                        
-                        DialKnob(
-                            title: "Detune",
-                            value: $viewModel.detune,
-                            range: -50...50
-                        )
-                    }
-                    
-                    // Basic Vertical Sliders
-                    HStack(spacing: ThemeMetrics.spacing) {
-                        VerticalSlider(
-                            title: "PWM",
-                            value: $viewModel.pwmDepth,
-                            range: 0...127,
-                            defaultValue: 0
-                        )
-                        
-                        VerticalSlider(
-                            title: "PW",
-                            value: $viewModel.pulseWidth,
-                            range: 0...127,
-                            defaultValue: 64
-                        )
-                        
-                        VerticalSlider(
-                            title: "PW Shift",
-                            value: $viewModel.pwShift,
-                            range: 0...127,
-                            defaultValue: 0
-                        )
-                        
-                        // Always show S-Saw and Gain sliders
-                        VerticalSlider(
-                            title: "S-Saw",
-                            value: $viewModel.superSawDetune,
-                            range: 0...127,
-                            defaultValue: 64
-                        )
-                        .disabled(!viewModel.isSuperSaw)
-                        .opacity(viewModel.isSuperSaw ? 1 : 0.5)
-                        
-                        VerticalSlider(
-                            title: "Gain",
-                            value: $viewModel.pcmGain,
-                            range: -6...12,
-                            defaultValue: 0,
-                            values: [-6, 0, 6, 12]
-                        )
-                        .disabled(viewModel.pcmWaveNumber == nil)
-                        .opacity(viewModel.pcmWaveNumber == nil ? 0.5 : 1)
-                    }
-                    
-                    // Divider
-                    Rectangle()
-                        .fill(ThemeColors.secondaryBackground)
-                        .frame(width: 1, height: 150)
-                        .padding(.horizontal, ThemeMetrics.spacing)
-                    
-                    // Pitch Envelope Section
-                    VStack(alignment: .center, spacing: ThemeMetrics.spacing) {
-                        Text("PITCH ENV")
-                            .font(.caption)
-                            .foregroundColor(ThemeColors.secondaryText)
-                        
-                        HStack(spacing: ThemeMetrics.spacing * 2) {
-                            // Depth Knob
-                            DialKnob(
-                                title: "Depth",
-                                value: $viewModel.pitchEnvDepth,
-                                range: -63...63,
-                                defaultValue: 0
-                            )
-                            
-                            // Attack and Decay Sliders
-                            HStack(spacing: ThemeMetrics.spacing) {
-                                VerticalSlider(
-                                    title: "Attack",
-                                    value: $viewModel.pitchEnvAttack,
-                                    range: 0...127,
-                                    defaultValue: 0
-                                )
-                                
-                                VerticalSlider(
-                                    title: "Decay",
-                                    value: $viewModel.pitchEnvDecay,
-                                    range: 0...127,
-                                    defaultValue: 127
-                                )
-                            }
-                        }
-                    }
-                }
+        SectionCard("Oscillator", systemImage: "waveform.path", tint: SectionTint.osc, accessory: {
+            VariationPicker(
+                selectedWaveform: viewModel.selectedWaveform,
+                selectedVariation: viewModel.selectedVariation,
+                isPCM: viewModel.pcmWaveNumber != nil
+            ) { variation in
+                viewModel.updateWaveform(waveform: viewModel.selectedWaveform, variation: variation)
             }
-            .padding()
-            .background(ThemeColors.secondaryBackground)
-            .cornerRadius(ThemeMetrics.cornerRadius)
+        }) {
+            VStack(alignment: .leading, spacing: 18) {
+                WaveformPicker(
+                    selectedWaveform: $viewModel.selectedWaveform,
+                    selectedVariation: $viewModel.selectedVariation,
+                    pcmWaveNumber: $viewModel.pcmWaveNumber,
+                    onWaveformUpdate: { waveform, variation in
+                        viewModel.updateWaveform(waveform: waveform, variation: variation)
+                    },
+                    onPCMUpdate: { number in
+                        viewModel.updatePCMWaveform(number: number)
+                    }
+                )
+
+                HStack(alignment: .top, spacing: 20) {
+                    ControlGroupBox("Tuning") {
+                        HStack(spacing: 8) {
+                            DialKnob(title: "Pitch", value: $viewModel.pitch, range: -24...24)
+                            DialKnob(title: "Detune", value: $viewModel.detune, range: -50...50)
+                        }
+                    }
+
+                    ControlDivider()
+
+                    ControlGroupBox("Shape") {
+                        HStack(alignment: .top, spacing: 4) {
+                            VerticalSlider(title: "PWM", value: $viewModel.pwmDepth, range: 0...127, defaultValue: 0)
+                            VerticalSlider(title: "PW", value: $viewModel.pulseWidth, range: 0...127, defaultValue: 64)
+                            VerticalSlider(title: "PW Shift", value: $viewModel.pwShift, range: 0...127, defaultValue: 0)
+                            VerticalSlider(title: "S-Saw", value: $viewModel.superSawDetune, range: 0...127, defaultValue: 64)
+                                .disabled(!viewModel.isSuperSaw)
+                                .opacity(viewModel.isSuperSaw ? 1 : 0.35)
+                                .help("Super Saw detune. Available when SUPER-SAW is selected.")
+                            VerticalSlider(
+                                title: "Gain",
+                                value: $viewModel.pcmGain,
+                                range: -6...12,
+                                defaultValue: 0,
+                                values: [-6, 0, 6, 12]
+                            )
+                            .disabled(viewModel.pcmWaveNumber == nil)
+                            .opacity(viewModel.pcmWaveNumber == nil ? 0.35 : 1)
+                            .help("PCM wave gain. Available when a PCM wave is selected.")
+                        }
+                    }
+
+                    ControlDivider()
+
+                    ControlGroupBox("Pitch Envelope") {
+                        HStack(alignment: .top, spacing: 4) {
+                            DialKnob(title: "Depth", value: $viewModel.pitchEnvDepth, range: -63...63, defaultValue: 0)
+                            VerticalSlider(title: "Attack", value: $viewModel.pitchEnvAttack, range: 0...127, defaultValue: 0)
+                            VerticalSlider(title: "Decay", value: $viewModel.pitchEnvDecay, range: 0...127, defaultValue: 127)
+                        }
+                    }
+
+                    Spacer(minLength: 0)
+                }
+                .fixedSize(horizontal: false, vertical: true)
+            }
         }
-        .padding()
-        .background(ThemeColors.background)
     }
 }
 
@@ -272,7 +194,11 @@ class OscillatorViewModel: ObservableObject {
 
 struct OscillatorView_Previews: PreviewProvider {
     static var previews: some View {
-        OscillatorView(partNumber: 1, partialNumber: 1, midiService: MIDIService(midiManager: MIDIManager()))
-            .background(ThemeColors.background)
+        OscillatorView(viewModel: OscillatorViewModel(
+            partNumber: 1, partialNumber: 1,
+            midiService: MIDIService(midiManager: MIDIManager())
+        ))
+        .padding()
+        .background(ThemeColors.background)
     }
 }

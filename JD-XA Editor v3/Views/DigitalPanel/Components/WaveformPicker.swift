@@ -11,72 +11,80 @@ public struct WaveformPicker: View {
     @State private var showingPCMPicker = false
     @State private var searchText = ""
     
-    private var variationsDisabled: Bool {
-        selectedWaveform == .superSaw || pcmWaveNumber != nil
+    private var isPCM: Bool { pcmWaveNumber != nil }
+
+    private var pcmWaveName: String? {
+        guard let number = pcmWaveNumber else { return nil }
+        return PCMWaveDatabase.findWave(id: number)?.name ?? "Wave \(number)"
     }
-    
+
     public var body: some View {
-        VStack(spacing: ThemeMetrics.spacing) {
-            // Basic Waveform Selection
-            HStack(spacing: ThemeMetrics.spacing) {
+        waveformGroup
+            .sheet(isPresented: $showingPCMPicker) {
+                // Route the picker's choice through onPCMUpdate so it gets sent
+                PCMWaveformPicker(
+                    pcmWaveNumber: Binding(
+                        get: { pcmWaveNumber },
+                        set: { onPCMUpdate?($0) }
+                    ),
+                    searchText: $searchText
+                )
+            }
+    }
+
+    private var waveformGroup: some View {
+        ControlGroupBox("Waveform") {
+            HStack(spacing: 4) {
                 ForEach(DOscWaveform.allCases, id: \.self) { waveform in
-                    Button(action: {
+                    Button(waveform.name) {
                         onWaveformUpdate?(waveform, selectedVariation)
-                    }) {
-                        Text(waveform.name)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
                     }
-                    .buttonStyle(.bordered)
-                    .tint(selectedWaveform == waveform && pcmWaveNumber == nil ? ThemeColors.accent : ThemeColors.secondaryBackground)
+                    .buttonStyle(ChipButtonStyle(isSelected: selectedWaveform == waveform && !isPCM))
                 }
-                
-                // PCM Button
-                Button(action: {
+
+                Button {
                     showingPCMPicker = true
-                }) {
-                    if let number = pcmWaveNumber,
-                       let wave = PCMWaveDatabase.findWave(id: number) {
-                        Text(wave.name)
-                            .lineLimit(1)
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "square.stack.3d.up")
+                        Text(pcmWaveName ?? "PCM…")
                             .truncationMode(.middle)
-                    } else {
-                        Text("PCM")
                     }
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
-                .buttonStyle(.bordered)
-                .tint(pcmWaveNumber != nil ? ThemeColors.accent : ThemeColors.secondaryBackground)
-            }
-            
-            // Variation Selection
-            HStack(spacing: ThemeMetrics.spacing) {
-                ForEach(WaveformVariation.allCases, id: \.self) { variation in
-                    Button(action: {
-                        onWaveformUpdate?(selectedWaveform, variation)
-                    }) {
-                        Text(variation.name)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
-                    }
-                    .buttonStyle(.bordered)
-                    .tint(selectedVariation == variation ? ThemeColors.accent : ThemeColors.secondaryBackground)
-                    .disabled(variationsDisabled)
-                    .opacity(variationsDisabled ? 0.5 : 1)
-                }
+                .buttonStyle(ChipButtonStyle(isSelected: isPCM))
+                .frame(minWidth: 96)
+                .help(pcmWaveName.map { "PCM wave: \($0). Click to choose another." } ?? "Choose a SuperNATURAL PCM wave")
             }
         }
-        .sheet(isPresented: $showingPCMPicker) {
-            // Route the picker's choice through onPCMUpdate so it gets sent
-            PCMWaveformPicker(
-                pcmWaveNumber: Binding(
-                    get: { pcmWaveNumber },
-                    set: { onPCMUpdate?($0) }
-                ),
-                searchText: $searchText
-            )
+    }
+}
+
+// MARK: - VariationPicker
+
+/// A / B / C variation of the basic waveform. Not available for SUPER-SAW or PCM.
+struct VariationPicker: View {
+    let selectedWaveform: DOscWaveform
+    let selectedVariation: WaveformVariation
+    let isPCM: Bool
+    let onSelect: (WaveformVariation) -> Void
+
+    private var isDisabled: Bool { selectedWaveform == .superSaw || isPCM }
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Text("VARIATION")
+                .font(.system(size: 10, weight: .semibold))
+                .tracking(0.8)
+                .foregroundColor(ThemeColors.tertiaryText)
+                .padding(.trailing, 4)
+            ForEach(WaveformVariation.allCases, id: \.self) { variation in
+                Button(variation.name) { onSelect(variation) }
+                    .buttonStyle(ChipButtonStyle(isSelected: selectedVariation == variation && !isDisabled))
+                    .frame(width: 28)
+            }
         }
+        .disabled(isDisabled)
+        .help(isDisabled ? "Variations are only available for the basic waveforms" : "Waveform variation")
     }
 }
 

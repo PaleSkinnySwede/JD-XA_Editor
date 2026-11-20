@@ -10,6 +10,7 @@ struct DialKnob: View {
     let isBidirectional: Bool
     let displayValues: [String]?
     
+    @Environment(\.controlTint) private var tint
     @State private var isDragging = false
     @State private var dragStart: Double = 0
     @State private var lastValue: Double = 0
@@ -20,7 +21,7 @@ struct DialKnob: View {
         value: Binding<Double>,
         range: ClosedRange<Double>,
         step: Double = 1,
-        size: CGFloat = 80,
+        size: CGFloat = 52,
         defaultValue: Double? = nil,
         isBidirectional: Bool = true,
         displayValues: [String]? = nil
@@ -38,14 +39,19 @@ struct DialKnob: View {
     var body: some View {
         VStack(spacing: 4) {
             Text(title)
-                .font(.caption)
+                .font(.system(size: 10, weight: .medium))
                 .foregroundColor(ThemeColors.secondaryText)
             
             ZStack {
                 // Background circle
                 Circle()
-                    .stroke(ThemeColors.secondaryBackground, lineWidth: 4)
+                    .stroke(ThemeColors.raised, lineWidth: 4)
                     .frame(width: size, height: size)
+
+                // Knob face
+                Circle()
+                    .fill(ThemeColors.raised.opacity(0.55))
+                    .frame(width: size - 12, height: size - 12)
                 
                 // Value arc
                 if isBidirectional {
@@ -54,14 +60,14 @@ struct DialKnob: View {
                         if value > defaultValue {
                             Circle()
                                 .trim(from: 0.5, to: 0.5 + (normalizedValue * 0.416))
-                                .stroke(isDragging ? ThemeColors.accent.opacity(0.8) : ThemeColors.accent,
+                                .stroke(isDragging ? tint.opacity(0.8) : tint,
                                        style: StrokeStyle(lineWidth: 4, lineCap: .round))
                                 .frame(width: size, height: size)
                                 .rotationEffect(.degrees(90))
                         } else {
                             Circle()
                                 .trim(from: 0.5 - (normalizedValue * 0.416), to: 0.5)
-                                .stroke(isDragging ? ThemeColors.accent.opacity(0.8) : ThemeColors.accent,
+                                .stroke(isDragging ? tint.opacity(0.8) : tint,
                                        style: StrokeStyle(lineWidth: 4, lineCap: .round))
                                 .frame(width: size, height: size)
                                 .rotationEffect(.degrees(90))
@@ -71,7 +77,7 @@ struct DialKnob: View {
                     // Unidirectional arc (new logic)
                     Circle()
                         .trim(from: 0, to: normalizedValue * 0.7)
-                        .stroke(isDragging ? ThemeColors.accent.opacity(0.8) : ThemeColors.accent,
+                        .stroke(isDragging ? tint.opacity(0.8) : tint,
                                style: StrokeStyle(lineWidth: 4, lineCap: .round))
                         .frame(width: size, height: size)
                         .rotationEffect(.degrees(150)) // Rotate to align with coordinate system
@@ -79,11 +85,11 @@ struct DialKnob: View {
                 
                 // Handle
                 Circle()
-                    .fill(isDragging ? ThemeColors.accent.opacity(0.8) : ThemeColors.accent)
+                    .fill(isDragging ? tint.opacity(0.8) : tint)
                     .frame(width: 12, height: 12)
                     .overlay(
                         Circle()
-                            .stroke(ThemeColors.background, lineWidth: 2)
+                            .stroke(ThemeColors.secondaryBackground, lineWidth: 2)
                     )
                     .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
                     .offset(y: -size/2)
@@ -91,7 +97,7 @@ struct DialKnob: View {
                 
                 // Value label
                 Text(formattedValue)
-                    .font(.system(.body, design: .monospaced))
+                    .font(.system(size: 12, weight: .medium, design: .monospaced))
                     .foregroundColor(ThemeColors.text)
                     .opacity(isDragging ? 0.7 : 1.0)
                     .scaleEffect(isDragging ? 1.2 : 1.0)
@@ -128,7 +134,7 @@ struct DialKnob: View {
             )
             .help("Drag to adjust value. Shift+drag for fine control. Double-click to reset to \(Int(defaultValue)).")
         }
-        .frame(width: size, height: size + 20)
+        .frame(width: max(size, 60), height: size + 22)
     }
     
     private func getHandleRotation() -> Double {

@@ -8,7 +8,8 @@ Where the project stands and what comes next. Last reviewed: 2026-11-13.
 - CoreMIDI client, output/input ports, device scanning and device picker (`MIDIManager.swift`).
 - Roland SysEx building: DT1, RQ1, Device Inquiry, checksum (`JDXASysEx.swift`).
 - Test Panel: device inquiry, basic/SuperNATURAL waveforms, reverb type, HPF cutoff, message log (`JDXATestView.swift`).
-- Digital panel UI: Parts 1–4 → Partials 1–3 → OSC / LFO tabs.
+- Main window: sidebar (Digital Parts 1–4, MIDI Test Panel) with a MIDI connection panel; JD-XA auto-selected when connected.
+- Digital part editor: partial tiles (⌘1–3) and all sections of a partial on one page as color-coded cards. State lives in `DigitalEditorStore`, so it survives switching parts/partials.
 - OSC tab sends waveform, variation, pitch, detune, PWM depth and pulse width.
 - PCM waveform catalog (`Models/PCMWaveform.swift`).
 - Python scripts in `Tests/` for poking the synth outside the app.
@@ -19,7 +20,7 @@ Where the project stands and what comes next. Last reviewed: 2026-11-13.
 - Everything in the LFO and Mod LFO views.
 
 **Not started**
-- Filter and Amp sections (placeholder text in `DigitalPartialView.swift`).
+- Filter and Amp sections (placeholder cards in `DigitalPartialView.swift`).
 - Analog part, drums, effects, program/common parameters.
 - Reading patches from the synth (RQ1) and syncing the UI.
 - Saving/loading patches.
@@ -46,9 +47,9 @@ Where the project stands and what comes next. Last reviewed: 2026-11-13.
    - Nibble encoding for wave numbers 1, 255, 256, 450.
 2. [ ] Route incoming MIDI to the app: today `MIDIManager` only `print`s it. Reassemble SysEx across packets, parse it, and show it in the Test Panel log.
 3. [ ] Wire the remaining OSC controls (PW Shift, Super Saw, Gain, pitch env).
-4. [ ] Wire LFO and Mod LFO to MIDI (addresses already in `MIDIParameters.swift`). Pass part/partial into `LFOContainerView`.
-5. [ ] Build the Filter tab (addresses already defined).
-6. [ ] Build the Amp tab (addresses already defined).
+4. [ ] Wire LFO and Mod LFO to MIDI (addresses already in `MIDIParameters.swift`). `LFOViewModel`/`ModLFOViewModel` live in `DigitalPartialState`, which knows the part/partial.
+5. [ ] Build the Filter card (addresses already defined; placeholder card in `DigitalPartialView`).
+6. [ ] Build the Amp card (addresses already defined; placeholder card in `DigitalPartialView`).
 7. [ ] Wire the Partial On/Off toggle.
 
 ## Later
@@ -64,8 +65,8 @@ Where the project stands and what comes next. Last reviewed: 2026-11-13.
 ## Cleanup
 
 - [ ] Add a `.gitignore` (`.DS_Store`, `xcuserdata/`, `*.xcuserstate`) and untrack `UserInterfaceState.xcuserstate`.
-- [ ] One `MIDIService` per app instead of one per `DigitalPartialView` render; consider making the SysEx layer a `struct`.
-- [ ] Remove the duplicate device picker (sidebar and Test Panel).
+- [x] One `MIDIService` per app instead of one per `DigitalPartialView` render *(owned by `DigitalEditorStore`)*. Still to consider: making the SysEx layer a `struct`.
+- [x] Remove the duplicate device picker (sidebar and Test Panel).
 - [x] Merge `buildPCMMessage` into `buildSysExMessage` — they do the same thing.
 - [ ] Move loose files in the app root (`DialKnob`, `VerticalSlider`, `DOscWaveform`, …) into `Views/Components` and `Models`.
 - [ ] Remove `oscPW`, which duplicates `oscPulseWidth`; fix the `fltEnvDecayTIme` typo.

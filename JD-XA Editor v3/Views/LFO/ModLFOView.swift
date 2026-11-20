@@ -1,110 +1,40 @@
 import SwiftUI
 
 struct ModLFOView: View {
-    @StateObject private var viewModel: ModLFOViewModel
+    @ObservedObject var viewModel: ModLFOViewModel
 
-    init() {
-        _viewModel = StateObject(wrappedValue: ModLFOViewModel())
-    }
-    
     var body: some View {
-        VStack(spacing: ThemeMetrics.spacing) {
-            // Title
-            Text("MOD-LFO Controls")
-                .font(.headline)
-                .foregroundColor(ThemeColors.text)
-            
-            // Main content
-            VStack(spacing: ThemeMetrics.spacing * 2) {
-                // Top row: Shape buttons and Tempo Sync
-                HStack(spacing: ThemeMetrics.spacing) {
-                    // Shape buttons
-                    ForEach(LFOShape.allCases, id: \.self) { shape in
-                        Button(action: { viewModel.selectedShape = shape }) {
-                            Text(shape.name)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 8)
-                        }
-                        .buttonStyle(.bordered)
-                        .tint(viewModel.selectedShape == shape ? ThemeColors.accent : ThemeColors.secondaryBackground)
-                    }
-                    
-                    // Tempo Sync button
-                    Toggle("Sync", isOn: $viewModel.isTempoSync)
-                        .toggleStyle(.button)
-                        .tint(ThemeColors.accent)
-                        .frame(maxWidth: .infinity)
-                }
-                
-                // Middle section: Rate knob and Rate Control slider
-                HStack(alignment: .top, spacing: ThemeMetrics.spacing * 3) {
-                    // Rate knob
-                    if viewModel.isTempoSync {
-                        // Tempo sync version
-                        DialKnob(
-                            title: "Rate",
-                            value: $viewModel.lfoRate,
-                            range: 0...19,
-                            defaultValue: 11,
-                            isBidirectional: false,
-                            displayValues: MIDIConstants.lfoRates
-                        )
-                    } else {
-                        // Normal rate knob
-                        DialKnob(
-                            title: "Rate",
-                            value: $viewModel.rate,
-                            range: 0...127,
-                            defaultValue: 64
-                        )
-                    }
-                    
-                }
-                
-                // Bottom section: Depth Sliders
-                HStack(spacing: ThemeMetrics.spacing) {
-                    VerticalSlider(
-                        title: "Pitch",
-                        value: $viewModel.pitchDepth,
-                        range: -63...63,
-                        defaultValue: 0
-                    )
-                    
-                    VerticalSlider(
-                        title: "Filter",
-                        value: $viewModel.filterDepth,
-                        range: -63...63,
-                        defaultValue: 0
-                    )
-                    
-                    VerticalSlider(
-                        title: "Amp",
-                        value: $viewModel.ampDepth,
-                        range: -63...63,
-                        defaultValue: 0
-                    )
-                    
-                    VerticalSlider(
-                        title: "Pan",
-                        value: $viewModel.panDepth,
-                        range: -63...63,
-                        defaultValue: 0
+        SectionCard("Mod LFO", systemImage: "wave.3.right.circle", tint: SectionTint.modLFO, accessory: {
+            ChipToggle(title: "Sync", systemImage: "metronome", isOn: $viewModel.isTempoSync)
+                .help("Sync the Mod LFO rate to the tempo")
+        }) {
+            VStack(alignment: .leading, spacing: 14) {
+                ChipPicker(LFOShape.allCases, selection: $viewModel.selectedShape) { $0.name }
+
+                HStack(alignment: .top, spacing: 14) {
+                    LFORateKnob(
+                        isTempoSync: viewModel.isTempoSync,
+                        rate: $viewModel.rate,
+                        syncedRate: $viewModel.lfoRate
                     )
 
-                    VerticalSlider(
-                        title: "Rate Ctrl",
-                        value: $viewModel.rateControl,
-                        range: -63...63,
-                        defaultValue: 0
-                    )
+                    VerticalSlider(title: "Rate Ctrl", value: $viewModel.rateControl, range: -63...63, height: 90, defaultValue: 0)
+                        .help("How much the modulation wheel changes the Mod LFO rate")
+
+                    ControlDivider()
+
+                    ControlGroupBox("Depth") {
+                        HStack(spacing: 4) {
+                            VerticalSlider(title: "Pitch", value: $viewModel.pitchDepth, range: -63...63, height: 90, defaultValue: 0)
+                            VerticalSlider(title: "Filter", value: $viewModel.filterDepth, range: -63...63, height: 90, defaultValue: 0)
+                            VerticalSlider(title: "Amp", value: $viewModel.ampDepth, range: -63...63, height: 90, defaultValue: 0)
+                            VerticalSlider(title: "Pan", value: $viewModel.panDepth, range: -63...63, height: 90, defaultValue: 0)
+                        }
+                    }
                 }
+                .fixedSize(horizontal: false, vertical: true)
             }
-            .padding()
-            .background(ThemeColors.secondaryBackground)
-            .cornerRadius(ThemeMetrics.cornerRadius)
         }
-        .padding()
-        .background(ThemeColors.background)
     }
 }
 
@@ -124,7 +54,8 @@ class ModLFOViewModel: ObservableObject {
 
 struct ModLFOView_Previews: PreviewProvider {
     static var previews: some View {
-        ModLFOView()
+        ModLFOView(viewModel: ModLFOViewModel())
+            .padding()
             .background(ThemeColors.background)
     }
 }

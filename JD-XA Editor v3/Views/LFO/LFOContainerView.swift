@@ -1,24 +1,23 @@
 import SwiftUI
 
+/// LFO and Mod LFO side by side, or stacked when the window is narrow.
 struct LFOContainerView: View {
+    @ObservedObject var lfo: LFOViewModel
+    @ObservedObject var modLFO: ModLFOViewModel
+
     var body: some View {
-        HStack(spacing: ThemeMetrics.spacing * 2) {
-            // Left LFO
-            LFOView()
-                .frame(maxWidth: .infinity)
-            
-            // Right LFO (Mod LFO)
-            ModLFOView()
-                .frame(maxWidth: .infinity)
+        AdaptivePair {
+            LFOView(viewModel: lfo)
+        } trailing: {
+            ModLFOView(viewModel: modLFO)
         }
-        .padding()
-        .background(ThemeColors.background)
     }
 }
 
 struct LFOContainerView_Previews: PreviewProvider {
     static var previews: some View {
-        LFOContainerView()
+        LFOContainerView(lfo: LFOViewModel(), modLFO: ModLFOViewModel())
+            .padding()
             .background(ThemeColors.background)
     }
 }
