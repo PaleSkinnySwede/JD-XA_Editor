@@ -1,10 +1,25 @@
 import Foundation
 
+/// Anything that can send a raw MIDI message. `MIDIManager` is the real one;
+/// tests use a recorder.
+protocol MIDISending: AnyObject {
+    func sendPacket(_ data: [UInt8])
+}
+
+extension MIDIManager: MIDISending {}
+
 class MIDIService {
     private let sysEx: JDXASysEx
-    private let midiManager: MIDIManager
+    private let midiManager: MIDISending
+
+    /// OSC Wave value for PCM (SuperNATURAL) waves. Not a `DOscWaveform` case
+    /// because the picker shows every case as a basic-waveform button.
+    static let pcmWaveformValue: UInt8 = 7
+
+    /// Valid SuperNATURAL PCM wave numbers
+    static let pcmWaveRange = 1...450
     
-    init(midiManager: MIDIManager) {
+    init(midiManager: MIDISending) {
         self.midiManager = midiManager
         self.sysEx = JDXASysEx()
     }
@@ -50,22 +65,52 @@ extension MIDIService {
             value: variation.rawValue
         )
         
-        // PCM wave number clear - the wave number spans 4 nibble bytes
-        let clearPCMAddress = DigitalPartParameter(
+        // Send all parameters in sequence, then clear the PCM wave number
+        sendParameterChange(waveformParam)
+        sendParameterChange(variationParam)
+        sendWaveNumber(partNumber: partNumber, partialNumber: partialNumber, number: 0)
+    }
+
+    /// Switches the oscillator to a PCM (SuperNATURAL) wave: OSC Wave = PCM,
+    /// variation A, then the wave number (clamped to 1...450).
+    func setOscillatorPCMWave(
+        partNumber: Int,
+        partialNumber: Int,
+        waveNumber: Int
+    ) {
+        let waveformParam = DigitalPartParameter(
+            partNumber: partNumber,
+            partialNumber: partialNumber,
+            parameterOffset: DigitalPartParameter.ParameterAddress.oscWaveform,
+            value: MIDIService.pcmWaveformValue
+        )
+        let variationParam = DigitalPartParameter(
+            partNumber: partNumber,
+            partialNumber: partialNumber,
+            parameterOffset: DigitalPartParameter.ParameterAddress.oscWaveVariation,
+            value: WaveformVariation.a.rawValue
+        )
+        let number = min(max(waveNumber, MIDIService.pcmWaveRange.lowerBound),
+                         MIDIService.pcmWaveRange.upperBound)
+
+        sendParameterChange(waveformParam)
+        sendParameterChange(variationParam)
+        sendWaveNumber(partNumber: partNumber, partialNumber: partialNumber, number: number)
+    }
+
+    /// The wave number spans 4 nibble bytes, so it can't go through `sendParameterChange`.
+    private func sendWaveNumber(partNumber: Int, partialNumber: Int, number: Int) {
+        let address = DigitalPartParameter(
             partNumber: partNumber,
             partialNumber: partialNumber,
             parameterOffset: DigitalPartParameter.ParameterAddress.oscWaveNumber,
             value: 0
         ).address
-        let clearPCMMessage = sysEx.createParameterChange(
-            address: clearPCMAddress,
-            data: JDXASysEx.encodeNibbles(0)
+        let message = sysEx.createParameterChange(
+            address: address,
+            data: JDXASysEx.encodeNibbles(number)
         )
-        
-        // Send all parameters in sequence
-        sendParameterChange(waveformParam)
-        sendParameterChange(variationParam)
-        midiManager.sendPacket(clearPCMMessage)
+        midiManager.sendPacket(message)
     }
     
     func setOscillatorPitch(

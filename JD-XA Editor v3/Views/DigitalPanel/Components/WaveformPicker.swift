@@ -21,7 +21,6 @@ public struct WaveformPicker: View {
             HStack(spacing: ThemeMetrics.spacing) {
                 ForEach(DOscWaveform.allCases, id: \.self) { waveform in
                     Button(action: {
-                        selectedWaveform = waveform
                         onWaveformUpdate?(waveform, selectedVariation)
                     }) {
                         Text(waveform.name)
@@ -55,7 +54,6 @@ public struct WaveformPicker: View {
             HStack(spacing: ThemeMetrics.spacing) {
                 ForEach(WaveformVariation.allCases, id: \.self) { variation in
                     Button(action: {
-                        selectedVariation = variation
                         onWaveformUpdate?(selectedWaveform, variation)
                     }) {
                         Text(variation.name)
@@ -68,6 +66,16 @@ public struct WaveformPicker: View {
                     .opacity(variationsDisabled ? 0.5 : 1)
                 }
             }
+        }
+        .sheet(isPresented: $showingPCMPicker) {
+            // Route the picker's choice through onPCMUpdate so it gets sent
+            PCMWaveformPicker(
+                pcmWaveNumber: Binding(
+                    get: { pcmWaveNumber },
+                    set: { onPCMUpdate?($0) }
+                ),
+                searchText: $searchText
+            )
         }
     }
 }
@@ -98,33 +106,43 @@ public struct PCMWaveformPicker: View {
     }
     
     public var body: some View {
-        HSplitView {
-            // Category List
-            List(PCMWaveDatabase.categories, selection: $selectedCategory) { category in
-                Text(category.name)
-                    .tag(category)
+        VStack(spacing: 0) {
+            HStack {
+                TextField("Search all waveforms", text: $searchText)
+                    .textFieldStyle(.roundedBorder)
+                Button("Cancel") { dismiss() }
+                    .keyboardShortcut(.cancelAction)
             }
-            .frame(minWidth: 150, maxWidth: 200)
-            .listStyle(.sidebar)
-            
-            // Waveform List
-            List {
-                if searchText.isEmpty && selectedCategory == nil {
-                    Text("Select a category or search for waveforms")
-                        .foregroundColor(.gray)
-                } else {
-                    ForEach(filteredWaves) { wave in
-                        Button {
-                            pcmWaveNumber = wave.id
-                            dismiss()
-                        } label: {
-                            HStack {
-                                Text(wave.displayName)
-                                    .foregroundColor(ThemeColors.text)
-                                Spacer()
-                                if pcmWaveNumber == wave.id {
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(ThemeColors.accent)
+            .padding(ThemeMetrics.spacing)
+
+            HSplitView {
+                // Category List
+                List(PCMWaveDatabase.categories, selection: $selectedCategory) { category in
+                    Text(category.name)
+                        .tag(category)
+                }
+                .frame(minWidth: 150, maxWidth: 200)
+                .listStyle(.sidebar)
+                
+                // Waveform List
+                List {
+                    if searchText.isEmpty && selectedCategory == nil {
+                        Text("Select a category or search for waveforms")
+                            .foregroundColor(.gray)
+                    } else {
+                        ForEach(filteredWaves) { wave in
+                            Button {
+                                pcmWaveNumber = wave.id
+                                dismiss()
+                            } label: {
+                                HStack {
+                                    Text(wave.displayName)
+                                        .foregroundColor(ThemeColors.text)
+                                    Spacer()
+                                    if pcmWaveNumber == wave.id {
+                                        Image(systemName: "checkmark")
+                                            .foregroundColor(ThemeColors.accent)
+                                    }
                                 }
                             }
                         }
@@ -132,7 +150,6 @@ public struct PCMWaveformPicker: View {
                 }
             }
         }
-        .searchable(text: $searchText, prompt: "Search all waveforms")
         .frame(minWidth: 500, minHeight: 400)
     }
 }

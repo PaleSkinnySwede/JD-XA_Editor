@@ -204,3 +204,71 @@ final class ParsingTests: XCTestCase {
         XCTAssertEqual(sysEx.processSysExMessage([0x90, 0x40, 0x7F]), "Invalid SysEx message format")
     }
 }
+
+// MARK: - Oscillator waveform sending
+
+/// Records every message instead of sending it to a device.
+private final class RecordingMIDISender: MIDISending {
+    var sent: [[UInt8]] = []
+    func sendPacket(_ data: [UInt8]) { sent.append(data) }
+
+    /// Address + data bytes of each message (drops header, checksum and F7)
+    var payloads: [[UInt8]] { sent.map { Array($0[8..<($0.count - 2)]) } }
+}
+
+final class OscillatorWaveformTests: XCTestCase {
+    private var recorder: RecordingMIDISender!
+    private var viewModel: OscillatorViewModel!
+    private let sysEx = JDXASysEx()
+
+    override func setUp() {
+        recorder = RecordingMIDISender()
+        viewModel = OscillatorViewModel(partNumber: 1, partialNumber: 2,
+                                        midiService: MIDIService(midiManager: recorder))
+    }
+
+    func testSelectingPCMWaveSendsPCMModeAndWaveNumber() {
+        viewModel.updatePCMWaveform(number: 300)  // 300 = 0x12C
+
+        XCTAssertEqual(recorder.payloads, [
+            [0x1A, 0x01, 0x21, 0x00, 0x07],                    // OSC Wave = PCM
+            [0x1A, 0x01, 0x21, 0x01, 0x00],                    // Variation = A
+            [0x1A, 0x01, 0x21, 0x35, 0x00, 0x01, 0x02, 0x0C],  // Wave number 300
+        ])
+        recorder.sent.forEach { XCTAssertTrue(sysEx.validateMessage($0)) }
+        XCTAssertEqual(viewModel.pcmWaveNumber, 300)
+        XCTAssertFalse(viewModel.isSuperSaw)
+    }
+
+    func testPCMWaveNumberIsClamped() {
+        viewModel.updatePCMWaveform(number: 9999)
+        XCTAssertEqual(recorder.payloads.last, [0x1A, 0x01, 0x21, 0x35, 0x00, 0x01, 0x0C, 0x02])
+    }
+
+    func testSelectingBasicWaveformSendsOnceAndClearsWaveNumber() {
+        viewModel.updatePCMWaveform(number: 12)
+        recorder.sent.removeAll()
+
+        viewModel.updateWaveform(waveform: .superSaw, variation: .a)
+
+        XCTAssertEqual(recorder.payloads, [
+            [0x1A, 0x01, 0x21, 0x00, 0x06],                    // OSC Wave = Super Saw
+            [0x1A, 0x01, 0x21, 0x01, 0x00],                    // Variation = A
+            [0x1A, 0x01, 0x21, 0x35, 0x00, 0x00, 0x00, 0x00],  // Wave number cleared
+        ])
+        XCTAssertNil(viewModel.pcmWaveNumber)
+        XCTAssertTrue(viewModel.isSuperSaw)
+    }
+
+    func testClearingPCMGoesBackToBasicWaveform() {
+        viewModel.updateWaveform(waveform: .triangle, variation: .b)
+        viewModel.updatePCMWaveform(number: 5)
+        recorder.sent.removeAll()
+
+        viewModel.updatePCMWaveform(number: nil)
+
+        XCTAssertEqual(recorder.payloads.first, [0x1A, 0x01, 0x21, 0x00, 0x03])
+        XCTAssertEqual(recorder.payloads.count, 3)
+        XCTAssertNil(viewModel.pcmWaveNumber)
+    }
+}

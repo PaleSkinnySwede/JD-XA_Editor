@@ -90,8 +90,8 @@ struct OscillatorView: View {
                             range: 0...127,
                             defaultValue: 64
                         )
-                        .disabled(viewModel.selectedWaveform != .superSaw)
-                        .opacity(viewModel.selectedWaveform != .superSaw ? 0.5 : 1)
+                        .disabled(!viewModel.isSuperSaw)
+                        .opacity(viewModel.isSuperSaw ? 1 : 0.5)
                         
                         VerticalSlider(
                             title: "Gain",
@@ -151,15 +151,6 @@ struct OscillatorView: View {
         }
         .padding()
         .background(ThemeColors.background)
-        .onChange(of: viewModel.selectedWaveform) { _ in
-            viewModel.sendWaveformChange()
-        }
-        .onChange(of: viewModel.selectedVariation) { _ in
-            viewModel.sendWaveformChange()
-        }
-        .onChange(of: viewModel.pcmWaveNumber) { _ in
-            viewModel.sendWaveformChange()
-        }
     }
 }
 
@@ -168,9 +159,14 @@ class OscillatorViewModel: ObservableObject {
     private let partNumber: Int
     private let partialNumber: Int
     
+    // Waveform state. Changes are sent only through `updateWaveform` and
+    // `updatePCMWaveform`, so each user action sends exactly one set of messages.
+    // A non-nil `pcmWaveNumber` means the oscillator is in PCM mode.
     @Published var selectedWaveform: DOscWaveform = .saw
     @Published var selectedVariation: WaveformVariation = .a
     @Published var pcmWaveNumber: Int?
+
+    var isSuperSaw: Bool { selectedWaveform == .superSaw && pcmWaveNumber == nil }
 
     // Parameters with MIDI update handlers
     @Published var pitch: Double = 0 {
@@ -204,43 +200,32 @@ class OscillatorViewModel: ObservableObject {
         self.midiService = midiService
     }
 
+    /// Selects a basic waveform (leaving PCM mode if it was on)
     func updateWaveform(waveform: DOscWaveform, variation: WaveformVariation) {
         selectedWaveform = waveform
         selectedVariation = variation
-        pcmWaveNumber = nil  // Clear PCM when selecting a basic waveform
-        
-        // Send MIDI update once
+        pcmWaveNumber = nil
+
         midiService.setOscillatorWaveform(
             partNumber: partNumber,
             partialNumber: partialNumber,
-            waveform: selectedWaveform,
-            variation: selectedVariation
+            waveform: waveform,
+            variation: variation
         )
     }
-    
+
+    /// Selects a PCM wave. `nil` leaves PCM mode and goes back to the basic waveform.
     func updatePCMWaveform(number: Int?) {
-        pcmWaveNumber = number
-        if number != nil {
-            selectedWaveform = .superSaw  // or whatever your PCM mode value is
-            selectedVariation = .a
+        guard let number else {
+            updateWaveform(waveform: selectedWaveform, variation: selectedVariation)
+            return
         }
-        
-        // Send MIDI update once
-        midiService.setOscillatorWaveform(
+        pcmWaveNumber = number
+
+        midiService.setOscillatorPCMWave(
             partNumber: partNumber,
             partialNumber: partialNumber,
-            waveform: selectedWaveform,
-            variation: selectedVariation
-        )
-    }
-    
-    // Changed from private to fileprivate
-    fileprivate func sendWaveformChange() {
-        midiService.setOscillatorWaveform(
-            partNumber: partNumber,
-            partialNumber: partialNumber,
-            waveform: selectedWaveform,
-            variation: selectedVariation
+            waveNumber: number
         )
     }
     
