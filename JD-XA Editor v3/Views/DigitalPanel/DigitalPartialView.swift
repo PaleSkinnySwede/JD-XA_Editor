@@ -45,9 +45,6 @@ private struct PartialScopeHeader: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text("Editing Partial \(partialNumber)")
                     .font(.system(size: 13, weight: .semibold))
-                Text("Each partial has its own oscillator, LFOs, filter and amp. Switch partials above or with ⌘1–⌘3.")
-                    .font(.system(size: 11))
-                    .foregroundColor(ThemeColors.secondaryText)
             }
             Spacer(minLength: 0)
         }
