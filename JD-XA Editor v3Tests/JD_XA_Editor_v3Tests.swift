@@ -205,13 +205,22 @@ final class ParsingTests: XCTestCase {
         _ = sysEx.processSysExMessage([0xF0, 0xF7])
     }
 
+    /// The reply a real JD-XA sent to Device Inquiry.
     func testParsesDeviceInquiryResponse() {
-        // F0 7E dev 06 02 41 <family 2> <number 2> <version 4> F7
+        // F0 7E dev 06 02 41 <family code 2> <family number 2> <revision 4> F7
+        let reply: [UInt8] = [0xF0, 0x7E, 0x10, 0x06, 0x02, 0x41,
+                              0x0F, 0x03, 0x00, 0x00,
+                              0x00, 0x03, 0x00, 0x00, 0xF7]
+        XCTAssertEqual(sysEx.processSysExMessage(reply),
+                       "JD-XA Identity Reply - Device ID: 10, Family: 0F 03, Number: 00 00, Revision: 00 03 00 00")
+    }
+
+    func testIdentityReplyFromAnotherRolandDevice() {
         let reply: [UInt8] = [0xF0, 0x7E, 0x10, 0x06, 0x02, 0x41,
                               0x0E, 0x03, 0x00, 0x00,
                               0x01, 0x02, 0x03, 0x04, 0xF7]
         XCTAssertEqual(sysEx.processSysExMessage(reply),
-                       "JD-XA Identity Response - Software Version: v1.2.3.4")
+                       "Roland device Identity Reply - Device ID: 10, Family: 0E 03, Number: 00 00, Revision: 01 02 03 04")
     }
 
     func testRejectsNonSysEx() {

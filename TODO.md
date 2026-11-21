@@ -35,7 +35,7 @@ Where the project stands and what comes next. Last reviewed: 2026-11-21.
 - [x] The PCM picker sheet was never presented (`showingPCMPicker` was set but nothing showed `PCMWaveformPicker`).
 - [x] **Duplicate sends.** `updateWaveform`/`updatePCMWaveform` send MIDI *and* the `.onChange` handlers in `OscillatorView` send again.
 - [x] **Out-of-bounds reads in the parser.** `processSysExMessage` checks `count >= 7` then reads `message[7]`; `processDT1Response` checks `>= 11` then reads `[8...11]` and from index 12. (`JDXASysEx.swift`)
-- [x] Device Inquiry reply read the software version from bytes 9–12; it's in bytes 10–13.
+- [x] Device Inquiry reply read the software revision from bytes 9–12; it's in bytes 10–13. *(The reply is now shown as family code, family number and revision in hex, and named JD-XA when the family code is 0F 03.)*
 - [x] `setOscWaveType` uses address `1A 00 20 00` (every other call uses `1A 01 …`). Fix or delete — it looks unused.
 - [x] Device selection used the CoreMIDI destination *index*, which shifts when devices are plugged/unplugged. *(Uses the endpoint's unique ID now.)*
 
