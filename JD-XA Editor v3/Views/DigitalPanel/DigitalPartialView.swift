@@ -17,9 +17,7 @@ struct DigitalPartialView: View {
 
             FilterView(viewModel: state.filter)
 
-            SectionCard("Amp", systemImage: "speaker.wave.2", tint: SectionTint.amp) {
-                ComingSoonView(message: "Amp controls are coming soon")
-            }
+            AmpView(viewModel: state.amp)
 
             LFOContainerView(lfo: state.lfo, modLFO: state.modLFO)
         }

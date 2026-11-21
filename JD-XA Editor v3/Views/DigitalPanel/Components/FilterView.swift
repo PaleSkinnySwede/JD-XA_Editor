@@ -193,22 +193,12 @@ struct FilterView: View {
                                      range: FilterViewModel.bipolarRange, defaultValue: 0)
                                 .help("How far the envelope moves the cutoff")
 
-                            VStack(spacing: 6) {
-                                EnvelopeGraph(
-                                    attack: viewModel.attack,
-                                    decay: viewModel.decay,
-                                    sustain: viewModel.sustain,
-                                    release: viewModel.release
-                                )
-                                .frame(width: 4 * 46 + 3 * 4, height: 30)
-
-                                HStack(alignment: .top, spacing: 4) {
-                                    VerticalSlider(title: "Attack", value: $viewModel.attack, range: 0...127, height: 80, defaultValue: 0)
-                                    VerticalSlider(title: "Decay", value: $viewModel.decay, range: 0...127, height: 80, defaultValue: 64)
-                                    VerticalSlider(title: "Sustain", value: $viewModel.sustain, range: 0...127, height: 80, defaultValue: 64)
-                                    VerticalSlider(title: "Release", value: $viewModel.release, range: 0...127, height: 80, defaultValue: 0)
-                                }
-                            }
+                            ADSRControls(
+                                attack: $viewModel.attack,
+                                decay: $viewModel.decay,
+                                sustain: $viewModel.sustain,
+                                release: $viewModel.release
+                            )
                         }
                     }
 

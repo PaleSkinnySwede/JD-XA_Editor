@@ -32,6 +32,34 @@ struct EnvelopeGraph: View {
     }
 }
 
+/// The envelope graph above Attack, Decay, Sustain and Release sliders.
+/// Used by the Filter and Amp cards.
+struct ADSRControls: View {
+    @Binding var attack: Double
+    @Binding var decay: Double
+    @Binding var sustain: Double
+    @Binding var release: Double
+    /// Double-click reset values, in A, D, S, R order
+    var defaults: (attack: Double, decay: Double, sustain: Double, release: Double) = (0, 64, 64, 0)
+
+    private static let sliderWidth: CGFloat = 46
+    private static let spacing: CGFloat = 4
+
+    var body: some View {
+        VStack(spacing: 6) {
+            EnvelopeGraph(attack: attack, decay: decay, sustain: sustain, release: release)
+                .frame(width: 4 * Self.sliderWidth + 3 * Self.spacing, height: 30)
+
+            HStack(alignment: .top, spacing: Self.spacing) {
+                VerticalSlider(title: "Attack", value: $attack, range: 0...127, height: 80, defaultValue: defaults.attack)
+                VerticalSlider(title: "Decay", value: $decay, range: 0...127, height: 80, defaultValue: defaults.decay)
+                VerticalSlider(title: "Sustain", value: $sustain, range: 0...127, height: 80, defaultValue: defaults.sustain)
+                VerticalSlider(title: "Release", value: $release, range: 0...127, height: 80, defaultValue: defaults.release)
+            }
+        }
+    }
+}
+
 /// Closed ADSR outline along the bottom edge, so it can be filled or stroked.
 struct EnvelopeShape: Shape {
     var attack: Double

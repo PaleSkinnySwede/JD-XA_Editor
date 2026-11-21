@@ -346,3 +346,75 @@ final class FilterSendingTests: XCTestCase {
         XCTAssertEqual(recorder.payloads.map { $0.last }, [127, 0])
     }
 }
+
+// MARK: - Amp sending
+
+final class AmpSendingTests: XCTestCase {
+    private var recorder: RecordingMIDISender!
+    private var viewModel: AmpViewModel!
+    private let sysEx = JDXASysEx()
+
+    override func setUp() {
+        recorder = RecordingMIDISender()
+        // Part 1, Partial 2 → address 1A 01 21 xx
+        viewModel = AmpViewModel(partNumber: 1, partialNumber: 2,
+                                 midiService: MIDIService(midiManager: recorder))
+    }
+
+    func testLevelAndEnvelopeAreSentAsIs() {
+        viewModel.level = 110
+        viewModel.attack = 5
+        viewModel.decay = 15
+        viewModel.sustain = 25
+        viewModel.release = 35
+
+        XCTAssertEqual(recorder.payloads, [
+            [0x1A, 0x01, 0x21, 0x15, 110],
+            [0x1A, 0x01, 0x21, 0x17, 5],
+            [0x1A, 0x01, 0x21, 0x18, 15],
+            [0x1A, 0x01, 0x21, 0x19, 25],
+            [0x1A, 0x01, 0x21, 0x1A, 35],
+        ])
+        recorder.sent.forEach { XCTAssertTrue(sysEx.validateMessage($0)) }
+    }
+
+    func testPanIsCenteredOn64() {
+        viewModel.pan = -64
+        viewModel.pan = 0
+        viewModel.pan = 63
+
+        XCTAssertEqual(recorder.payloads, [
+            [0x1A, 0x01, 0x21, 0x1B, 0],
+            [0x1A, 0x01, 0x21, 0x1B, 64],
+            [0x1A, 0x01, 0x21, 0x1B, 127],
+        ])
+    }
+
+    func testPanLabels() {
+        XCTAssertEqual(AmpViewModel.panLabels.count, 128)
+        XCTAssertEqual(AmpViewModel.panLabels.first, "L64")
+        XCTAssertEqual(AmpViewModel.panLabels[64], "C")
+        XCTAssertEqual(AmpViewModel.panLabels.last, "R63")
+    }
+
+    func testSensitivities() {
+        viewModel.keyFollow = -100
+        viewModel.keyFollow = 30
+        viewModel.velocitySens = 63
+        viewModel.aftertouchSens = -63
+
+        XCTAssertEqual(recorder.payloads, [
+            [0x1A, 0x01, 0x21, 0x3C, 54],
+            [0x1A, 0x01, 0x21, 0x3C, 67],
+            [0x1A, 0x01, 0x21, 0x16, 127],
+            [0x1A, 0x01, 0x21, 0x31, 1],
+        ])
+    }
+
+    func testOutOfRangeValuesAreClamped() {
+        viewModel.level = 300
+        viewModel.pan = -90
+
+        XCTAssertEqual(recorder.payloads.map { $0.last }, [127, 0])
+    }
+}
