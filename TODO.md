@@ -10,7 +10,7 @@ Where the project stands and what comes next. Last reviewed: 2026-11-21.
 - Roland SysEx building: DT1, RQ1, Device Inquiry, checksum (`JDXASysEx.swift`).
 - Test Panel: device inquiry, basic/SuperNATURAL waveforms, reverb type, HPF cutoff, message log of sent and received messages (`JDXATestView.swift`).
 - Main window: sidebar (Digital Parts 1–4, MIDI Test Panel) with a MIDI connection panel; JD-XA auto-selected when connected.
-- Digital part editor: partial tiles (⌘1–3) and all sections of a partial on one page as color-coded cards. State lives in `DigitalEditorStore`, so it survives switching parts/partials.
+- Digital part editor: the three partials side by side on one page, one row per section (OSC, LFO, Mod LFO, Filter, Amp) as color-coded cards, each column headed by the partial's wave and on/off switch. Cards use their compact layout (`isCompactLayout`): control groups wrap to the column width. Fits without scrolling at about 1,690 pt of editor width; scrolls when smaller. State lives in `DigitalEditorStore`, so it survives switching parts.
 - OSC tab sends waveform, variation, pitch, detune, PWM depth and pulse width.
 - PCM waveform catalog (`Models/PCMWaveform.swift`).
 - Python scripts in `Tests/` for poking the synth outside the app.

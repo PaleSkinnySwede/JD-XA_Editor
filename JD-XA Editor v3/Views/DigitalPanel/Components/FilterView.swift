@@ -143,6 +143,8 @@ final class FilterViewModel: ObservableObject {
 struct FilterView: View {
     @ObservedObject var viewModel: FilterViewModel
 
+    @Environment(\.isCompactLayout) private var isCompact
+
     private var isBypassed: Bool { viewModel.mode == .bypass }
 
     var body: some View {
@@ -161,9 +163,9 @@ struct FilterView: View {
             .disabled(isBypassed)
             .help(isBypassed ? "The slope has no effect when the filter is bypassed" : "How steeply the filter cuts")
         }) {
-            VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: isCompact ? 12 : 18) {
                 ControlGroupBox("Type") {
-                    HStack(spacing: 4) {
+                    ChipRow(compactMinCellWidth: 60) {
                         ForEach(FilterMode.allCases, id: \.self) { mode in
                             Button(mode.name) { viewModel.mode = mode }
                                 .buttonStyle(ChipButtonStyle(isSelected: viewModel.mode == mode))
@@ -172,7 +174,7 @@ struct FilterView: View {
                     }
                 }
 
-                HStack(alignment: .top, spacing: 16) {
+                ControlGroupRow {
                     ControlGroupBox("Filter") {
                         HStack(alignment: .top, spacing: 4) {
                             DialKnob(title: "Cutoff", value: $viewModel.cutoff, range: 0...127,
@@ -188,17 +190,10 @@ struct FilterView: View {
                     ControlDivider()
 
                     ControlGroupBox("Envelope") {
-                        HStack(alignment: .top, spacing: 4) {
-                            DialKnob(title: "Depth", value: $viewModel.envDepth,
-                                     range: FilterViewModel.bipolarRange, defaultValue: 0)
-                                .help("How far the envelope moves the cutoff")
-
-                            ADSRControls(
-                                attack: $viewModel.attack,
-                                decay: $viewModel.decay,
-                                sustain: $viewModel.sustain,
-                                release: $viewModel.release
-                            )
+                        // Depth goes above the ADSR sliders when there's no room beside them
+                        ViewThatFits(in: .horizontal) {
+                            HStack(alignment: .top, spacing: 4) { envelopeControls }
+                            VStack(alignment: .leading, spacing: 8) { envelopeControls }
                         }
                     }
 
@@ -220,9 +215,21 @@ struct FilterView: View {
 
                     Spacer(minLength: 0)
                 }
-                .fixedSize(horizontal: false, vertical: true)
             }
         }
+    }
+
+    @ViewBuilder private var envelopeControls: some View {
+        DialKnob(title: "Depth", value: $viewModel.envDepth,
+                 range: FilterViewModel.bipolarRange, defaultValue: 0)
+            .help("How far the envelope moves the cutoff")
+
+        ADSRControls(
+            attack: $viewModel.attack,
+            decay: $viewModel.decay,
+            sustain: $viewModel.sustain,
+            release: $viewModel.release
+        )
     }
 }
 

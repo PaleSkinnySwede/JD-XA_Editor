@@ -10,6 +10,7 @@ public struct WaveformPicker: View {
     
     @State private var showingPCMPicker = false
     @State private var searchText = ""
+    @Environment(\.isCompactLayout) private var isCompact
     
     private var isPCM: Bool { pcmWaveNumber != nil }
 
@@ -34,7 +35,7 @@ public struct WaveformPicker: View {
 
     private var waveformGroup: some View {
         ControlGroupBox("Waveform") {
-            HStack(spacing: 4) {
+            ChipRow(compactMinCellWidth: 80) {
                 ForEach(DOscWaveform.allCases, id: \.self) { waveform in
                     Button(waveform.name) {
                         onWaveformUpdate?(waveform, selectedVariation)
@@ -52,7 +53,7 @@ public struct WaveformPicker: View {
                     }
                 }
                 .buttonStyle(ChipButtonStyle(isSelected: isPCM))
-                .frame(minWidth: 96)
+                .frame(minWidth: isCompact ? nil : 96)
                 .help(pcmWaveName.map { "PCM wave: \($0). Click to choose another." } ?? "Choose a SuperNATURAL PCM wave")
             }
         }

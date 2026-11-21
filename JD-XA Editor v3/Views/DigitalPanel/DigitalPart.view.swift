@@ -1,31 +1,10 @@
 import SwiftUI
 
-/// The three partials of a part as selectable tiles, each with its own
-/// on/off switch and the waveform it's playing.
-struct PartialStrip: View {
-    let partNumber: Int
-    @ObservedObject var store: DigitalEditorStore
-
-    var body: some View {
-        let selection = store.selectedPartialBinding(for: partNumber)
-        HStack(spacing: 10) {
-            ForEach(DigitalEditorStore.partials, id: \.self) { partial in
-                PartialTile(
-                    state: store.state(part: partNumber, partial: partial),
-                    oscillator: store.state(part: partNumber, partial: partial).oscillator,
-                    isSelected: selection.wrappedValue == partial,
-                    onSelect: { selection.wrappedValue = partial }
-                )
-            }
-        }
-    }
-}
-
-private struct PartialTile: View {
+/// The header above a partial's column: its number, the wave it's playing
+/// and its on/off switch.
+struct PartialHeader: View {
     @ObservedObject var state: DigitalPartialState
     @ObservedObject var oscillator: OscillatorViewModel
-    let isSelected: Bool
-    let onSelect: () -> Void
 
     private var waveName: String {
         if let number = oscillator.pcmWaveNumber {
@@ -37,36 +16,23 @@ private struct PartialTile: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Button(action: onSelect) {
-                HStack(spacing: 10) {
-                    Text("\(state.partialNumber)")
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
-                        .foregroundColor(isSelected ? .black.opacity(0.85) : ThemeColors.text)
-                        .frame(width: 28, height: 28)
-                        .background(
-                            RoundedRectangle(cornerRadius: 7)
-                                .fill(isSelected ? ThemeColors.accent : ThemeColors.raised)
-                        )
+            Text("\(state.partialNumber)")
+                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .foregroundColor(ThemeColors.text)
+                .frame(width: 28, height: 28)
+                .background(RoundedRectangle(cornerRadius: 7).fill(ThemeColors.raised))
 
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text("Partial \(state.partialNumber)")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(ThemeColors.text)
-                        Text(state.isEnabled ? waveName : "Off")
-                            .font(.system(size: 11))
-                            .foregroundColor(ThemeColors.secondaryText)
-                            .lineLimit(1)
-                            .truncationMode(.tail)
-                    }
-                    Spacer(minLength: 0)
-                }
-                .contentShape(Rectangle())
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Partial \(state.partialNumber)")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(ThemeColors.text)
+                Text(state.isEnabled ? waveName : "Off")
+                    .font(.system(size: 11))
+                    .foregroundColor(ThemeColors.secondaryText)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             }
-            .buttonStyle(.plain)
-            // On the select button only: on the whole tile, the shortcut
-            // went to the on/off switch instead
-            .keyboardShortcut(KeyEquivalent(Character("\(state.partialNumber)")), modifiers: .command)
-            .help("Edit Partial \(state.partialNumber) (⌘\(state.partialNumber))")
+            Spacer(minLength: 0)
 
             Toggle("Partial \(state.partialNumber) on", isOn: $state.isEnabled)
                 .toggleStyle(.switch)
@@ -81,22 +47,22 @@ private struct PartialTile: View {
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(isSelected ? ThemeColors.raised : ThemeColors.secondaryBackground)
+                .fill(ThemeColors.secondaryBackground)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(isSelected ? ThemeColors.accent.opacity(0.7) : ThemeColors.stroke, lineWidth: isSelected ? 1.5 : 1)
+                .strokeBorder(ThemeColors.stroke)
         )
         .opacity(state.isEnabled ? 1 : 0.6)
-        .animation(.easeOut(duration: 0.15), value: isSelected)
     }
 }
 
-struct PartialStrip_Previews: PreviewProvider {
+struct PartialHeader_Previews: PreviewProvider {
     static var previews: some View {
-        PartialStrip(partNumber: 1, store: DigitalEditorStore(midiManager: MIDIManager()))
+        let store = DigitalEditorStore(midiManager: MIDIManager())
+        PartialHeader(state: store.state(part: 1, partial: 1), oscillator: store.state(part: 1, partial: 1).oscillator)
             .padding()
-            .frame(width: 800)
+            .frame(width: 400)
             .background(ThemeColors.background)
     }
 }

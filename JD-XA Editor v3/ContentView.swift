@@ -44,6 +44,8 @@ struct ContentView: View {
             switch selection {
             case .digital(let part):
                 DigitalPanelView(partNumber: part, store: digitalStore)
+                    // Fresh PCM sheet and drag states per part
+                    .id(part)
             case .testPanel:
                 JDXATestView(viewModel: viewModel)
             case nil:

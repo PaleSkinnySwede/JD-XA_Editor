@@ -2,6 +2,7 @@ import SwiftUI
 
 struct OscillatorView: View {
     @ObservedObject var viewModel: OscillatorViewModel
+    @Environment(\.isCompactLayout) private var isCompact
 
     var body: some View {
         SectionCard("Oscillator", systemImage: "waveform.path", tint: SectionTint.osc, accessory: {
@@ -13,7 +14,7 @@ struct OscillatorView: View {
                 viewModel.updateWaveform(waveform: viewModel.selectedWaveform, variation: variation)
             }
         }) {
-            VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: isCompact ? 12 : 18) {
                 WaveformPicker(
                     selectedWaveform: $viewModel.selectedWaveform,
                     selectedVariation: $viewModel.selectedVariation,
@@ -26,7 +27,7 @@ struct OscillatorView: View {
                     }
                 )
 
-                HStack(alignment: .top, spacing: 20) {
+                ControlGroupRow(spacing: 20) {
                     ControlGroupBox("Tuning") {
                         HStack(spacing: 8) {
                             DialKnob(title: "Pitch", value: $viewModel.pitch, range: -24...24)
@@ -70,7 +71,6 @@ struct OscillatorView: View {
 
                     Spacer(minLength: 0)
                 }
-                .fixedSize(horizontal: false, vertical: true)
             }
         }
     }

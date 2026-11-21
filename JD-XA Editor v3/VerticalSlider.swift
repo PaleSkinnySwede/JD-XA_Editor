@@ -10,6 +10,7 @@ struct VerticalSlider: View {
     var values: [Double]? = nil // For discrete values like gain settings
     
     @Environment(\.controlTint) private var tint
+    @Environment(\.isCompactLayout) private var isCompact
     @State private var isDragging = false
     @State private var dragStart: CGFloat = 0
     @State private var startValue: Double = 0
@@ -122,13 +123,17 @@ struct VerticalSlider: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .frame(height: height)
+            // Shorter in a compact column, to save vertical space
+            .frame(height: isCompact ? (height * 0.7).rounded() : height)
             
             Text(title)
                 .font(.system(size: 10, weight: .medium))
                 .foregroundColor(ThemeColors.secondaryText)
+                // Shrink rather than wrap or cut off in a compact column
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
         }
-        .frame(width: 46)
+        .frame(width: isCompact ? 36 : 46)
         .gesture(
             TapGesture(count: 2)
                 .onEnded {
