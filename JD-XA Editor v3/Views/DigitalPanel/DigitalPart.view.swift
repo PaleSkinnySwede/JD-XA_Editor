@@ -16,7 +16,6 @@ struct PartialStrip: View {
                     isSelected: selection.wrappedValue == partial,
                     onSelect: { selection.wrappedValue = partial }
                 )
-                .keyboardShortcut(KeyEquivalent(Character("\(partial)")), modifiers: .command)
             }
         }
     }
@@ -64,6 +63,9 @@ private struct PartialTile: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            // On the select button only: on the whole tile, the shortcut
+            // went to the on/off switch instead
+            .keyboardShortcut(KeyEquivalent(Character("\(state.partialNumber)")), modifiers: .command)
             .help("Edit Partial \(state.partialNumber) (⌘\(state.partialNumber))")
 
             Toggle("Partial \(state.partialNumber) on", isOn: $state.isEnabled)
@@ -71,6 +73,7 @@ private struct PartialTile: View {
                 .controlSize(.mini)
                 .labelsHidden()
                 .tint(ThemeColors.accent)
+                .accessibilityIdentifier("partial-\(state.partialNumber)-switch")
                 .help(state.isEnabled ? "Turn Partial \(state.partialNumber) off" : "Turn Partial \(state.partialNumber) on")
         }
         .padding(.horizontal, 10)

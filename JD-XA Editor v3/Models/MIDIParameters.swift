@@ -13,15 +13,21 @@ struct DigitalPartParameter: MIDIParameter {
     let parameterOffset: [UInt8]
     let value: UInt8
     
+    /// Temporary Tone start for Digital Part 1–4: 1A 00 / 1A 20 / 1A 40 / 1A 60 00 00
+    static let temporaryToneStarts: [UInt8] = [0x00, 0x20, 0x40, 0x60]
+    /// SuperNATURAL Synth Tone offset inside a Temporary Tone: 01 00 00
+    static let synthToneOffset: UInt8 = 0x01
+    /// SuperNATURAL Synth Tone Partial 1–3 offsets: 00 20 00 / 00 21 00 / 00 22 00
+    static let partialStart: UInt8 = 0x20
+
+    /// 1A, part block + 01, 20–22 for the partial, parameter offset.
+    /// Part 2 Partial 3 HPF Cutoff, for example, is 1A 21 22 39.
     var address: [UInt8] {
-        // Base address for Digital Part 1
-        let baseAddress: UInt8 = 0x1A
-        
-        // Partial offsets: 0x20 for Partial 1, 0x21 for Partial 2, 0x22 for Partial 3
-        let partialOffset: UInt8 = UInt8(0x20 + (partialNumber-1))
-        
-        // Combine into final address
-        return [baseAddress, 0x01, partialOffset] + parameterOffset
+        let part = min(max(partNumber, 1), 4)
+        let partial = min(max(partialNumber, 1), 3)
+        let partByte = Self.temporaryToneStarts[part - 1] + Self.synthToneOffset
+        let partialByte = Self.partialStart + UInt8(partial - 1)
+        return [0x1A, partByte, partialByte] + parameterOffset
     }
 }
 

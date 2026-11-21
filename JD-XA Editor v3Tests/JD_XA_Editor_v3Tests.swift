@@ -148,13 +148,27 @@ final class AddressTests: XCTestCase {
         }
     }
 
-    /// Known bug: `partNumber` isn't part of the address yet, so Parts 2–4 edit Part 1.
-    /// Remove the XCTExpectFailure once the real per-part base addresses are in.
     func testEachPartHasItsOwnAddress() {
-        XCTExpectFailure("Per-part base addresses not implemented yet (see TODO.md)")
         let offset = DigitalPartParameter.ParameterAddress.oscWaveform
         let addresses = (1...4).map { address(part: $0, partial: 1, offset: offset) }
         XCTAssertEqual(Set(addresses.map { $0.description }).count, 4)
+    }
+
+    /// Temporary Tone starts 1A 00/20/40/60 + SN Synth Tone 01 + Partial 20–22
+    func testPartBlockAddresses() {
+        let offset = DigitalPartParameter.ParameterAddress.fltHPCutoff
+        XCTAssertEqual(address(part: 1, partial: 1, offset: offset), [0x1A, 0x01, 0x20, 0x39])
+        XCTAssertEqual(address(part: 2, partial: 3, offset: offset), [0x1A, 0x21, 0x22, 0x39])
+        XCTAssertEqual(address(part: 3, partial: 2, offset: offset), [0x1A, 0x41, 0x21, 0x39])
+        XCTAssertEqual(address(part: 4, partial: 1, offset: offset), [0x1A, 0x61, 0x20, 0x39])
+    }
+
+    func testDigitalPartSendsToItsOwnBlock() {
+        let recorder = RecordingMIDISender()
+        let amp = AmpViewModel(partNumber: 3, partialNumber: 1,
+                               midiService: MIDIService(midiManager: recorder))
+        amp.level = 90
+        XCTAssertEqual(recorder.payloads, [[0x1A, 0x41, 0x20, 0x15, 90]])
     }
 }
 

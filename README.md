@@ -20,7 +20,8 @@ A native macOS editor for the **Roland JD-XA** synthesizer, written in Swift and
   - Digital part HPF cutoff
 - **Digital part editor** (work in progress):
   - Partial tiles for Partials 1–3 (⌘1–⌘3), each showing its waveform and an on/off switch
-  - Every section of the partial on one scrolling page, color-coded like the hardware panel: OSC, FILTER, AMP, LFO and MOD LFO
+  - Every section of the partial on one scrolling page, color-coded like the hardware panel: OSC, LFO, MOD LFO, FILTER and AMP. Each partial has its own copy of all of them, so every card is tagged with its partial
+  - Parts 1–4 each send to their own address block
   - Edits are kept per part and partial while you move around the app
   - Filter controls: type (LPF, HPF, BPF, …), slope, cutoff, resonance, HPF, envelope with a live ADSR graph, and key follow, velocity and aftertouch sensitivity
   - Amp controls: level, pan, envelope with a live ADSR graph, and key follow, velocity and aftertouch sensitivity
