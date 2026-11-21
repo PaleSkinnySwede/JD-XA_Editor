@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Every section of one partial on a single page, laid out like the
-/// synth's panel: OSC on top, FILTER and AMP, then the two LFOs.
+/// synth's panel and its signal flow: OSC, FILTER, AMP, then the two LFOs.
 struct DigitalPartialView: View {
     @ObservedObject var state: DigitalPartialState
 
@@ -15,14 +15,10 @@ struct DigitalPartialView: View {
 
             OscillatorView(viewModel: state.oscillator)
 
-            AdaptivePair {
-                SectionCard("Filter", systemImage: "line.diagonal", tint: SectionTint.filter) {
-                    ComingSoonView(message: "Filter controls are coming soon")
-                }
-            } trailing: {
-                SectionCard("Amp", systemImage: "speaker.wave.2", tint: SectionTint.amp) {
-                    ComingSoonView(message: "Amp controls are coming soon")
-                }
+            FilterView(viewModel: state.filter)
+
+            SectionCard("Amp", systemImage: "speaker.wave.2", tint: SectionTint.amp) {
+                ComingSoonView(message: "Amp controls are coming soon")
             }
 
             LFOContainerView(lfo: state.lfo, modLFO: state.modLFO)

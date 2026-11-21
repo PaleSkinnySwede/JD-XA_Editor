@@ -272,3 +272,77 @@ final class OscillatorWaveformTests: XCTestCase {
         XCTAssertNil(viewModel.pcmWaveNumber)
     }
 }
+
+// MARK: - Filter sending
+
+final class FilterSendingTests: XCTestCase {
+    private var recorder: RecordingMIDISender!
+    private var viewModel: FilterViewModel!
+    private let sysEx = JDXASysEx()
+
+    override func setUp() {
+        recorder = RecordingMIDISender()
+        // Part 1, Partial 3 → address 1A 01 22 xx
+        viewModel = FilterViewModel(partNumber: 1, partialNumber: 3,
+                                    midiService: MIDIService(midiManager: recorder))
+    }
+
+    func testModeAndSlope() {
+        viewModel.mode = .hpf
+        viewModel.slope = .minus24
+
+        XCTAssertEqual(recorder.payloads, [
+            [0x1A, 0x01, 0x22, 0x0A, 0x02],  // Filter Mode = HPF
+            [0x1A, 0x01, 0x22, 0x0B, 0x01],  // Slope = -24 dB
+        ])
+        recorder.sent.forEach { XCTAssertTrue(sysEx.validateMessage($0)) }
+    }
+
+    func testUnipolarValuesAreSentAsIs() {
+        viewModel.cutoff = 100
+        viewModel.resonance = 0
+        viewModel.hpfCutoff = 127
+        viewModel.attack = 10
+        viewModel.decay = 20
+        viewModel.sustain = 30
+        viewModel.release = 40
+
+        XCTAssertEqual(recorder.payloads, [
+            [0x1A, 0x01, 0x22, 0x0C, 100],
+            [0x1A, 0x01, 0x22, 0x0F, 0],
+            [0x1A, 0x01, 0x22, 0x39, 127],
+            [0x1A, 0x01, 0x22, 0x10, 10],
+            [0x1A, 0x01, 0x22, 0x11, 20],
+            [0x1A, 0x01, 0x22, 0x12, 30],
+            [0x1A, 0x01, 0x22, 0x13, 40],
+        ])
+    }
+
+    func testBipolarValuesAreCenteredOn64() {
+        viewModel.envDepth = -63
+        viewModel.envVelocitySens = 63
+        viewModel.cutoffAftertouchSens = 0
+
+        XCTAssertEqual(recorder.payloads, [
+            [0x1A, 0x01, 0x22, 0x14, 1],
+            [0x1A, 0x01, 0x22, 0x0E, 127],
+            [0x1A, 0x01, 0x22, 0x30, 64],
+        ])
+    }
+
+    func testKeyFollowIsSentInStepsOfTen() {
+        viewModel.keyFollow = -100
+        viewModel.keyFollow = 0
+        viewModel.keyFollow = 100
+
+        XCTAssertEqual(recorder.payloads.map { $0.last }, [54, 64, 74])
+        XCTAssertTrue(recorder.payloads.allSatisfy { $0[3] == 0x0D })
+    }
+
+    func testOutOfRangeValuesAreClamped() {
+        viewModel.cutoff = 200
+        viewModel.envDepth = -100
+
+        XCTAssertEqual(recorder.payloads.map { $0.last }, [127, 0])
+    }
+}
