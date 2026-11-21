@@ -34,6 +34,8 @@
 		26E11AD42D23579300F565B8 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E11AD32D23579300F565B8 /* Constants.swift */; };
 		26E11AD62D235DD500F565B8 /* MIDIParameters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E11AD52D235DD500F565B8 /* MIDIParameters.swift */; };
 		26E11AD82D23610E00F565B8 /* MIDIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E11AD72D23610E00F565B8 /* MIDIService.swift */; };
+		26F17E022EBF000100A1B2C3 /* FilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26F17E012EBF000100A1B2C3 /* FilterView.swift */; };
+		26F17E042EBF000100A1B2C3 /* EnvelopeGraph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26F17E032EBF000100A1B2C3 /* EnvelopeGraph.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -85,6 +87,8 @@
 		26E11AD32D23579300F565B8 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		26E11AD52D235DD500F565B8 /* MIDIParameters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MIDIParameters.swift; path = Models/MIDIParameters.swift; sourceTree = "<group>"; };
 		26E11AD72D23610E00F565B8 /* MIDIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MIDIService.swift; path = Services/MIDIService.swift; sourceTree = "<group>"; };
+		26F17E012EBF000100A1B2C3 /* FilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FilterView.swift; path = Views/DigitalPanel/Components/FilterView.swift; sourceTree = "<group>"; };
+		26F17E032EBF000100A1B2C3 /* EnvelopeGraph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EnvelopeGraph.swift; path = Views/DigitalPanel/Components/EnvelopeGraph.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -154,6 +158,8 @@
 				26E11ACF2D23519A00F565B8 /* ModLFOView.swift */,
 				2601F0DA2D20A4D000F2EB53 /* OscillatorView.swift */,
 				2601F0DC2D20A78C00F2EB53 /* WaveformPicker.swift */,
+				26F17E032EBF000100A1B2C3 /* EnvelopeGraph.swift */,
+				26F17E012EBF000100A1B2C3 /* FilterView.swift */,
 				2601F0DE2D20B59B00F2EB53 /* PCMWaveform.swift */,
 				26D4B82E2D2215FB00C40434 /* DialKnob.swift */,
 				26D4B8302D22162100C40434 /* VerticalSlider.swift */,
@@ -327,6 +333,8 @@
 				26987ED92D1F60D0003DC173 /* JDXASysEx.swift in Sources */,
 				26987EDF2D1F78A1003DC173 /* DOscWaveform.swift in Sources */,
 				2601F0DD2D20A78C00F2EB53 /* WaveformPicker.swift in Sources */,
+				26F17E042EBF000100A1B2C3 /* EnvelopeGraph.swift in Sources */,
+				26F17E022EBF000100A1B2C3 /* FilterView.swift in Sources */,
 				26E11AD62D235DD500F565B8 /* MIDIParameters.swift in Sources */,
 				26987EB02D1F575D003DC173 /* ContentView.swift in Sources */,
 				26987EAE2D1F575D003DC173 /* JD_XA_Editor_v3App.swift in Sources */,

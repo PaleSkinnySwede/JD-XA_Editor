@@ -76,11 +76,11 @@ struct DialKnob: View {
                 } else {
                     // Unidirectional arc (new logic)
                     Circle()
-                        .trim(from: 0, to: normalizedValue * 0.7)
+                        .trim(from: 0, to: normalizedValue * 250 / 360)
                         .stroke(isDragging ? tint.opacity(0.8) : tint,
                                style: StrokeStyle(lineWidth: 4, lineCap: .round))
                         .frame(width: size, height: size)
-                        .rotationEffect(.degrees(150)) // Rotate to align with coordinate system
+                        .rotationEffect(.degrees(145)) // Start at the handle's minimum (-125° from 12 o'clock)
                 }
                 
                 // Handle
