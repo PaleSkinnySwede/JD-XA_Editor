@@ -55,20 +55,6 @@ struct ContentView: View {
         }
         .frame(minWidth: 1020, minHeight: 680)
         .preferredColorScheme(.dark)
-        .onAppear {
-            midiManager.scanForDevices()
-            selectJDXAIfFound()
-        }
-    }
-
-    /// Picks the JD-XA automatically when it's connected and nothing is chosen yet.
-    private func selectJDXAIfFound() {
-        guard viewModel.selectedDeviceID == nil,
-              let jdxa = midiManager.availableDevices.first(where: {
-                  $0.name.localizedCaseInsensitiveContains("JD-XA")
-              })
-        else { return }
-        viewModel.selectedDeviceID = jdxa.id
     }
 }
 
@@ -102,7 +88,7 @@ private struct ConnectionPanel: View {
 
             Picker("MIDI Output", selection: $viewModel.selectedDeviceID) {
                 Text("No device").tag(nil as Int?)
-                ForEach(viewModel.availableDevices, id: \.id) { device in
+                ForEach(viewModel.availableDevices) { device in
                     Text(device.name).tag(device.id as Int?)
                 }
             }

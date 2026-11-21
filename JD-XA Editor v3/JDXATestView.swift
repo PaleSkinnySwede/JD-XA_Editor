@@ -7,12 +7,13 @@ class JDXATestViewModel: ObservableObject {
     let sysEx = JDXASysEx()
     let midiManager: MIDIManager
     
+    /// Unique ID of the chosen MIDI output (see `MIDIDevice`).
     @Published var selectedDeviceID: Int? {
         didSet {
             midiManager.selectedDeviceID = selectedDeviceID
         }
     }
-    @Published var availableDevices: [(id: Int, name: String)] = []
+    @Published var availableDevices: [MIDIDevice] = []
     @Published var messageLog: [String] = []
     @Published var selectedBasicWaveform: DOscWaveform = .saw
     @Published var selectedWaveformVariation: WaveformVariation = .a
@@ -22,20 +23,42 @@ class JDXATestViewModel: ObservableObject {
     
     init(midiManager: MIDIManager) {
         self.midiManager = midiManager
-        
-        // Observe MIDI manager's device list
+
         midiManager.$availableDevices
-            .assign(to: &$availableDevices)
-            
-        // Observe selected device
-        $selectedDeviceID
-            .sink { id in
-                midiManager.selectedDeviceID = id
-            }
+            .sink { [weak self] devices in self?.devicesChanged(devices) }
+            .store(in: &cancellables)
+
+        midiManager.receivedSysEx
+            .sink { [weak self] message in self?.logReceived(message) }
             .store(in: &cancellables)
     }
     
     private var cancellables = Set<AnyCancellable>()
+
+    /// Keeps the selection valid as devices come and go: drops an output that was
+    /// unplugged, and picks the JD-XA when it shows up and nothing is chosen.
+    private func devicesChanged(_ devices: [MIDIDevice]) {
+        availableDevices = devices
+        let selection = Self.selection(keeping: selectedDeviceID, in: devices)
+        if selection != selectedDeviceID {
+            selectedDeviceID = selection
+        }
+    }
+
+    static func selection(keeping current: Int?, in devices: [MIDIDevice]) -> Int? {
+        if let current, devices.contains(where: { $0.id == current }) {
+            return current
+        }
+        return devices.first(where: { $0.name.localizedCaseInsensitiveContains("JD-XA") })?.id
+    }
+
+    private func logReceived(_ message: [UInt8]) {
+        var description = sysEx.processSysExMessage(message)
+        if !sysEx.validateMessage(message) {
+            description += " (bad checksum)"
+        }
+        logMessage("Received \(description): \(sysEx.messageToHexString(message))")
+    }
     
     func sendDeviceInquiry() {
         let message = sysEx.createDeviceInquiry()
@@ -218,7 +241,7 @@ private struct MessageLogView: View {
                 .disabled(viewModel.messageLog.isEmpty)
         }) {
             if viewModel.messageLog.isEmpty {
-                Text("Messages you send appear here.")
+                Text("Messages you send and replies from the synth appear here.")
                     .foregroundColor(ThemeColors.secondaryText)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
