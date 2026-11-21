@@ -1,13 +1,14 @@
 # TODO
 
-Where the project stands and what comes next. Last reviewed: 2026-11-13.
+Where the project stands and what comes next. Last reviewed: 2026-11-21.
 
 ## Where we are
 
 **Works**
-- CoreMIDI client, output/input ports, device scanning and device picker (`MIDIManager.swift`).
+- CoreMIDI client, output/input ports, device scanning and device picker (`MIDIManager.swift`). Devices are picked by CoreMIDI unique ID and rescanned on hot-plug; the JD-XA is selected automatically when it appears.
+- Incoming SysEx is reassembled across packets (`SysExAssembler`), parsed and shown in the Test Panel log, with a note when the checksum is wrong.
 - Roland SysEx building: DT1, RQ1, Device Inquiry, checksum (`JDXASysEx.swift`).
-- Test Panel: device inquiry, basic/SuperNATURAL waveforms, reverb type, HPF cutoff, message log (`JDXATestView.swift`).
+- Test Panel: device inquiry, basic/SuperNATURAL waveforms, reverb type, HPF cutoff, message log of sent and received messages (`JDXATestView.swift`).
 - Main window: sidebar (Digital Parts 1–4, MIDI Test Panel) with a MIDI connection panel; JD-XA auto-selected when connected.
 - Digital part editor: partial tiles (⌘1–3) and all sections of a partial on one page as color-coded cards. State lives in `DigitalEditorStore`, so it survives switching parts/partials.
 - OSC tab sends waveform, variation, pitch, detune, PWM depth and pulse width.
@@ -34,17 +35,17 @@ Where the project stands and what comes next. Last reviewed: 2026-11-13.
 - [x] The PCM picker sheet was never presented (`showingPCMPicker` was set but nothing showed `PCMWaveformPicker`).
 - [x] **Duplicate sends.** `updateWaveform`/`updatePCMWaveform` send MIDI *and* the `.onChange` handlers in `OscillatorView` send again.
 - [x] **Out-of-bounds reads in the parser.** `processSysExMessage` checks `count >= 7` then reads `message[7]`; `processDT1Response` checks `>= 11` then reads `[8...11]` and from index 12. (`JDXASysEx.swift`)
-- [x] Device Inquiry reply read the software version from bytes 9–12; it's in bytes 10–13.
+- [x] Device Inquiry reply read the software revision from bytes 9–12; it's in bytes 10–13. *(The reply is now shown as family code, family number and revision in hex, and named JD-XA when the family code is 0F 03.)*
 - [x] `setOscWaveType` uses address `1A 00 20 00` (every other call uses `1A 01 …`). Fix or delete — it looks unused.
-- [ ] Device selection uses the CoreMIDI destination *index*, which shifts when devices are plugged/unplugged. Use the endpoint's unique ID.
+- [x] Device selection used the CoreMIDI destination *index*, which shifts when devices are plugged/unplugged. *(Uses the endpoint's unique ID now.)*
 
 ## Next up
 
-1. [ ] Fix the bugs above, with unit tests. *(Unit tests for checksum, nibbles, addresses and parsing are in `JD_XA_Editor_v3Tests.swift`; per-part addresses are covered by `testPartBlockAddresses`.)*
+1. [x] Fix the bugs above, with unit tests. *(Unit tests for checksum, nibbles, addresses and parsing are in `JD_XA_Editor_v3Tests.swift`; per-part addresses are covered by `testPartBlockAddresses`.)*
    - Checksum against known-good messages from the Python scripts / synth.
    - Address building for every part/partial.
    - Nibble encoding for wave numbers 1, 255, 256, 450.
-2. [ ] Route incoming MIDI to the app: today `MIDIManager` only `print`s it. Reassemble SysEx across packets, parse it, and show it in the Test Panel log.
+2. [x] Route incoming MIDI to the app: reassemble SysEx across packets, parse it, and show it in the Test Panel log. *(Not yet tried against the synth: check that Device Inquiry shows a reply.)* Channel messages (notes, CCs) are ignored for now.
 3. [ ] Wire the remaining OSC controls (PW Shift, Super Saw, Gain, pitch env).
 4. [ ] Wire LFO and Mod LFO to MIDI (addresses already in `MIDIParameters.swift`). `LFOViewModel`/`ModLFOViewModel` live in `DigitalPartialState`, which knows the part/partial.
 5. [x] Build the Filter card: type, slope, cutoff, resonance, HPF, envelope (depth + ADSR with graph), key follow, velocity and aftertouch sensitivity. All sent to the synth (`FilterView.swift`). *Value ranges follow the SuperNATURAL synth layout (mode 0–7, ±63 as 1–127, key follow 54–74); check them against the MIDI Implementation doc.*
@@ -59,11 +60,12 @@ Where the project stands and what comes next. Last reviewed: 2026-11-13.
 - [ ] Program common parameters (name, tempo, etc.).
 - [ ] Save/load patches to disk (`.syx`).
 - [ ] Throttle/coalesce messages while dragging knobs and sliders.
+- [ ] `sendPacket` sends one `MIDIPacket` and rejects messages over 256 bytes; bulk dumps (patch send) will need `MIDISendSysex` or a larger packet list.
 - [ ] Verify every value range/offset against the MIDI Implementation doc (e.g. detune, pitch env depth, PCM gain).
 
 ## Cleanup
 
-- [ ] Add a `.gitignore` (`.DS_Store`, `xcuserdata/`, `*.xcuserstate`) and untrack `UserInterfaceState.xcuserstate`.
+- [x] Add a `.gitignore` (`.DS_Store`, `xcuserdata/`, `*.xcuserstate`) and untrack `UserInterfaceState.xcuserstate`.
 - [x] One `MIDIService` per app instead of one per `DigitalPartialView` render *(owned by `DigitalEditorStore`)*. Still to consider: making the SysEx layer a `struct`.
 - [x] Remove the duplicate device picker (sidebar and Test Panel).
 - [x] Merge `buildPCMMessage` into `buildSysExMessage` — they do the same thing.

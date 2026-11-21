@@ -205,17 +205,115 @@ final class ParsingTests: XCTestCase {
         _ = sysEx.processSysExMessage([0xF0, 0xF7])
     }
 
+    /// The reply a real JD-XA sent to Device Inquiry.
     func testParsesDeviceInquiryResponse() {
-        // F0 7E dev 06 02 41 <family 2> <number 2> <version 4> F7
+        // F0 7E dev 06 02 41 <family code 2> <family number 2> <revision 4> F7
+        let reply: [UInt8] = [0xF0, 0x7E, 0x10, 0x06, 0x02, 0x41,
+                              0x0F, 0x03, 0x00, 0x00,
+                              0x00, 0x03, 0x00, 0x00, 0xF7]
+        XCTAssertEqual(sysEx.processSysExMessage(reply),
+                       "JD-XA Identity Reply - Device ID: 10, Family: 0F 03, Number: 00 00, Revision: 00 03 00 00")
+    }
+
+    func testIdentityReplyFromAnotherRolandDevice() {
         let reply: [UInt8] = [0xF0, 0x7E, 0x10, 0x06, 0x02, 0x41,
                               0x0E, 0x03, 0x00, 0x00,
                               0x01, 0x02, 0x03, 0x04, 0xF7]
         XCTAssertEqual(sysEx.processSysExMessage(reply),
-                       "JD-XA Identity Response - Software Version: v1.2.3.4")
+                       "Roland device Identity Reply - Device ID: 10, Family: 0E 03, Number: 00 00, Revision: 01 02 03 04")
     }
 
     func testRejectsNonSysEx() {
         XCTAssertEqual(sysEx.processSysExMessage([0x90, 0x40, 0x7F]), "Invalid SysEx message format")
+    }
+}
+
+// MARK: - Incoming SysEx reassembly
+
+final class SysExAssemblerTests: XCTestCase {
+    let inquiryReply: [UInt8] = [0xF0, 0x7E, 0x10, 0x06, 0x02, 0x41,
+                                 0x0E, 0x03, 0x00, 0x00,
+                                 0x01, 0x02, 0x03, 0x04, 0xF7]
+
+    func testWholeMessageInOnePacket() {
+        var assembler = SysExAssembler()
+        XCTAssertEqual(assembler.feed(inquiryReply), [inquiryReply])
+    }
+
+    func testMessageSplitAcrossPackets() {
+        var assembler = SysExAssembler()
+        XCTAssertEqual(assembler.feed(Array(inquiryReply[0..<4])), [])
+        XCTAssertEqual(assembler.feed(Array(inquiryReply[4..<9])), [])
+        XCTAssertEqual(assembler.feed(Array(inquiryReply[9...])), [inquiryReply])
+    }
+
+    func testSeveralMessagesInOnePacket() {
+        var assembler = SysExAssembler()
+        XCTAssertEqual(assembler.feed(inquiryReply + inquiryReply), [inquiryReply, inquiryReply])
+    }
+
+    func testRealTimeBytesInsideMessageAreSkipped() {
+        var assembler = SysExAssembler()
+        var withClock = inquiryReply
+        withClock.insert(0xF8, at: 5)
+        withClock.insert(0xFE, at: 9)
+        XCTAssertEqual(assembler.feed(withClock), [inquiryReply])
+    }
+
+    func testChannelMessagesAreIgnored() {
+        var assembler = SysExAssembler()
+        XCTAssertEqual(assembler.feed([0x90, 0x40, 0x7F, 0x80, 0x40, 0x00]), [])
+        XCTAssertEqual(assembler.feed([0xB0, 0x07] + inquiryReply + [0x64]), [inquiryReply])
+    }
+
+    func testStatusByteAbortsUnfinishedMessage() {
+        var assembler = SysExAssembler()
+        XCTAssertEqual(assembler.feed([0xF0, 0x41, 0x10, 0x90, 0x40, 0x7F, 0xF7]), [])
+    }
+
+    func testNewF0RestartsMessage() {
+        var assembler = SysExAssembler()
+        XCTAssertEqual(assembler.feed([0xF0, 0x41, 0x10] + inquiryReply), [inquiryReply])
+    }
+
+    func testStrayF7IsIgnored() {
+        var assembler = SysExAssembler()
+        XCTAssertEqual(assembler.feed([0xF7, 0x01]), [])
+    }
+
+    func testOverlongMessageIsDropped() {
+        var assembler = SysExAssembler()
+        let body = [UInt8](repeating: 0x01, count: SysExAssembler.maxLength + 1)
+        XCTAssertEqual(assembler.feed([0xF0] + body + [0xF7]), [])
+        XCTAssertEqual(assembler.feed(inquiryReply), [inquiryReply])
+    }
+}
+
+// MARK: - Device selection
+
+final class DeviceSelectionTests: XCTestCase {
+    let jdxa = MIDIDevice(id: -1_234_567, name: "JD-XA")
+    let other = MIDIDevice(id: 42, name: "IAC Driver Bus 1")
+
+    func testKeepsSelectedDeviceThatIsStillThere() {
+        XCTAssertEqual(JDXATestViewModel.selection(keeping: other.id, in: [jdxa, other]), other.id)
+    }
+
+    func testKeepsSelectionWhenDeviceOrderChanges() {
+        XCTAssertEqual(JDXATestViewModel.selection(keeping: other.id, in: [other, jdxa]), other.id)
+    }
+
+    func testPicksJDXAWhenNothingIsSelected() {
+        XCTAssertEqual(JDXATestViewModel.selection(keeping: nil, in: [other, jdxa]), jdxa.id)
+    }
+
+    func testFallsBackToJDXAWhenSelectedDeviceIsUnplugged() {
+        XCTAssertEqual(JDXATestViewModel.selection(keeping: 99, in: [other, jdxa]), jdxa.id)
+    }
+
+    func testClearsSelectionWhenNoUsableDeviceIsLeft() {
+        XCTAssertNil(JDXATestViewModel.selection(keeping: jdxa.id, in: [other]))
+        XCTAssertNil(JDXATestViewModel.selection(keeping: nil, in: []))
     }
 }
 

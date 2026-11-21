@@ -192,19 +192,32 @@ extension JDXASysEx {
         return "Unknown SysEx message type"
     }
     
+    /// The JD-XA's device family code and family number code in its Identity Reply.
+    static let jdxaFamilyCode: [UInt8] = [0x0F, 0x03]
+    static let jdxaFamilyNumber: [UInt8] = [0x00, 0x00]
+
+    /// Identity Reply: F0 7E dev 06 02 41 <family code 2> <family number 2>
+    /// <software revision level 4> F7. The fields are fixed codes, shown as hex.
     private func processDeviceInquiryResponse(_ message: [UInt8]) -> String {
         guard message.count == 15 else {
             return "Invalid Device Inquiry Response length"
         }
-        
-        // F0 7E dev 06 02 41 <family 2> <number 2> <version 4> F7
-        let softwareVersion = String(format: "v%d.%d.%d.%d",
-                                   message[10], message[11],
-                                   message[12], message[13])
-        
-        return "JD-XA Identity Response - Software Version: \(softwareVersion)"
+
+        let hex = { (bytes: ArraySlice<UInt8>) in
+            bytes.map { String(format: "%02X", $0) }.joined(separator: " ")
+        }
+        let familyCode = message[6...7]
+        let familyNumber = message[8...9]
+        let isJDXA = message[5] == Constants.manufacturerId
+            && Array(familyCode) == Self.jdxaFamilyCode
+            && Array(familyNumber) == Self.jdxaFamilyNumber
+        let device = isJDXA ? "JD-XA" : (message[5] == Constants.manufacturerId ? "Roland device" : "Device")
+
+        return "\(device) Identity Reply - Device ID: \(String(format: "%02X", message[2])), "
+            + "Family: \(hex(familyCode)), Number: \(hex(familyNumber)), "
+            + "Revision: \(hex(message[10...13]))"
     }
-    
+
     private func processDT1Response(_ message: [UInt8]) -> String {
         guard message.count >= 14 else {
             return "Invalid DT1 Response length"
