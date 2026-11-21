@@ -5,12 +5,15 @@ struct DialKnob: View {
     @Binding var value: Double
     let range: ClosedRange<Double>
     let step: Double
-    let size: CGFloat
+    private let fullSize: CGFloat
+    /// Smaller in a compact column, to save vertical space
+    private var size: CGFloat { isCompact ? (fullSize * 0.85).rounded() : fullSize }
     let defaultValue: Double
     let isBidirectional: Bool
     let displayValues: [String]?
     
     @Environment(\.controlTint) private var tint
+    @Environment(\.isCompactLayout) private var isCompact
     @State private var isDragging = false
     @State private var dragStart: Double = 0
     @State private var lastValue: Double = 0
@@ -30,7 +33,7 @@ struct DialKnob: View {
         self._value = value
         self.range = range
         self.step = step
-        self.size = size
+        self.fullSize = size
         self.defaultValue = defaultValue ?? (range.upperBound + range.lowerBound) / 2
         self.isBidirectional = isBidirectional
         self.displayValues = displayValues
@@ -41,6 +44,9 @@ struct DialKnob: View {
             Text(title)
                 .font(.system(size: 10, weight: .medium))
                 .foregroundColor(ThemeColors.secondaryText)
+                // Shrink rather than wrap or cut off in a compact column
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
             
             ZStack {
                 // Background circle
@@ -134,7 +140,7 @@ struct DialKnob: View {
             )
             .help("Drag to adjust value. Shift+drag for fine control. Double-click to reset to \(Int(defaultValue)).")
         }
-        .frame(width: max(size, 60), height: size + 22)
+        .frame(width: max(size, isCompact ? 48 : 60), height: size + 22)
     }
     
     private func getHandleRotation() -> Double {

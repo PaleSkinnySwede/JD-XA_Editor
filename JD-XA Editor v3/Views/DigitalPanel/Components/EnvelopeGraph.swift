@@ -42,13 +42,15 @@ struct ADSRControls: View {
     /// Double-click reset values, in A, D, S, R order
     var defaults: (attack: Double, decay: Double, sustain: Double, release: Double) = (0, 64, 64, 0)
 
-    private static let sliderWidth: CGFloat = 46
+    /// Matches `VerticalSlider`'s width
+    private var sliderWidth: CGFloat { isCompact ? 36 : 46 }
+    @Environment(\.isCompactLayout) private var isCompact
     private static let spacing: CGFloat = 4
 
     var body: some View {
         VStack(spacing: 6) {
             EnvelopeGraph(attack: attack, decay: decay, sustain: sustain, release: release)
-                .frame(width: 4 * Self.sliderWidth + 3 * Self.spacing, height: 30)
+                .frame(width: 4 * sliderWidth + 3 * Self.spacing, height: 30)
 
             HStack(alignment: .top, spacing: Self.spacing) {
                 VerticalSlider(title: "Attack", value: $attack, range: 0...127, height: 80, defaultValue: defaults.attack)

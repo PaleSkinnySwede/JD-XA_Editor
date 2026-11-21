@@ -57,18 +57,208 @@ extension EnvironmentValues {
     }
 }
 
-// MARK: - Section scope
+// MARK: - Compact layout
 
-private struct SectionScopeKey: EnvironmentKey {
-    static let defaultValue: String? = nil
+private struct CompactLayoutKey: EnvironmentKey {
+    static let defaultValue = false
 }
 
 extension EnvironmentValues {
-    /// What the cards below belong to, such as "Partial 1". `SectionCard`
-    /// shows it as a tag next to its title.
-    var sectionScope: String? {
-        get { self[SectionScopeKey.self] }
-        set { self[SectionScopeKey.self] = newValue }
+    /// True when cards sit in a narrow column, as in the All Partials view.
+    /// Cards then stack their control groups and wrap their chip rows.
+    var isCompactLayout: Bool {
+        get { self[CompactLayoutKey.self] }
+        set { self[CompactLayoutKey.self] = newValue }
+    }
+}
+
+/// The control groups of a card. Side by side normally; in a compact column
+/// they flow left to right and wrap onto a new line when the column runs out
+/// of width. Put a `ControlDivider` between groups; a divider where a line
+/// wraps is hidden.
+struct ControlGroupRow<Content: View>: View {
+    var spacing: CGFloat = 16
+    @ViewBuilder var content: () -> Content
+    @Environment(\.isCompactLayout) private var isCompact
+
+    var body: some View {
+        let layout = isCompact
+            ? AnyLayout(ControlFlowLayout(spacing: min(spacing, 8), lineSpacing: 10))
+            : AnyLayout(HStackLayout(alignment: .top, spacing: spacing))
+        layout { content() }
+            .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+/// Marks a `ControlDivider` for `ControlFlowLayout`.
+private struct IsControlDivider: LayoutValueKey {
+    static let defaultValue = false
+}
+
+/// Lays out control groups at their ideal size, left to right, wrapping when
+/// the next group doesn't fit. Dividers stretch to the height of their line
+/// and are dropped where a line wraps.
+struct ControlFlowLayout: Layout {
+    var spacing: CGFloat
+    var lineSpacing: CGFloat
+
+    private struct Line {
+        var items: [Int] = []
+        var height: CGFloat = 0
+    }
+
+    /// A group's ideal size, or its size squeezed to `width` when it's wider
+    /// (a group can then rearrange itself, e.g. with `ViewThatFits`)
+    private func size(of subview: LayoutSubview, width: CGFloat) -> CGSize {
+        let ideal = subview.sizeThatFits(.unspecified)
+        guard ideal.width > width else { return ideal }
+        return subview.sizeThatFits(ProposedViewSize(width: width, height: nil))
+    }
+
+    private func lines(width: CGFloat, subviews: Subviews) -> [Line] {
+        var lines = [Line()]
+        var x: CGFloat = 0
+        var pendingDivider: Int?
+
+        for index in subviews.indices {
+            if subviews[index][IsControlDivider.self] {
+                pendingDivider = index
+                continue
+            }
+            let size = size(of: subviews[index], width: width)
+            let divider = pendingDivider
+            pendingDivider = nil
+
+            if lines[lines.count - 1].items.isEmpty {
+                lines[lines.count - 1].items = [index]
+                x = size.width
+            } else {
+                let dividerWidth = divider.map { subviews[$0].sizeThatFits(.unspecified).width + spacing } ?? 0
+                if x + dividerWidth + spacing + size.width <= width {
+                    if let divider { lines[lines.count - 1].items.append(divider) }
+                    lines[lines.count - 1].items.append(index)
+                    x += dividerWidth + spacing + size.width
+                } else {
+                    lines.append(Line(items: [index]))
+                    x = size.width
+                }
+            }
+            lines[lines.count - 1].height = max(lines[lines.count - 1].height, size.height)
+        }
+        return lines
+    }
+
+    private func idealWidth(_ subviews: Subviews) -> CGFloat {
+        let widths = subviews.map { $0.sizeThatFits(.unspecified).width }
+        return widths.reduce(0, +) + spacing * CGFloat(max(widths.count - 1, 0))
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width: CGFloat
+        if let proposed = proposal.width, proposed.isFinite {
+            width = proposed
+        } else {
+            width = idealWidth(subviews)
+        }
+        let lines = lines(width: width, subviews: subviews)
+        let height = lines.reduce(0) { $0 + $1.height } + lineSpacing * CGFloat(max(lines.count - 1, 0))
+        return CGSize(width: width, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var placed = Set<Int>()
+        var y = bounds.minY
+        for line in lines(width: bounds.width, subviews: subviews) {
+            var x = bounds.minX
+            for index in line.items {
+                let isDivider = subviews[index][IsControlDivider.self]
+                let size = size(of: subviews[index], width: bounds.width)
+                subviews[index].place(
+                    at: CGPoint(x: x, y: y),
+                    proposal: ProposedViewSize(width: size.width, height: isDivider ? line.height : size.height)
+                )
+                x += size.width + spacing
+                placed.insert(index)
+            }
+            y += line.height + lineSpacing
+        }
+        // Dividers where a line wrapped: no room, so nothing shows
+        for index in subviews.indices where !placed.contains(index) {
+            subviews[index].place(at: bounds.origin, proposal: .zero)
+        }
+    }
+}
+
+/// A row of chips. In a compact column it becomes a grid with as many
+/// columns as fit at `compactMinCellWidth`, balanced across rows.
+struct ChipRow<Content: View>: View {
+    var compactMinCellWidth: CGFloat
+    @ViewBuilder var content: () -> Content
+    @Environment(\.isCompactLayout) private var isCompact
+
+    var body: some View {
+        let layout = isCompact
+            ? AnyLayout(ChipGridLayout(minCellWidth: compactMinCellWidth))
+            : AnyLayout(HStackLayout(spacing: 4))
+        layout { content() }
+    }
+}
+
+/// Equal-width cells, as many to a row as fit at `minCellWidth`, with the
+/// cells spread evenly over the rows. The cells of a shorter last row
+/// stretch to fill it.
+struct ChipGridLayout: Layout {
+    var minCellWidth: CGFloat
+    var spacing: CGFloat = 4
+
+    private func columns(width: CGFloat, count: Int) -> Int {
+        let fit = max(1, Int((width + spacing) / (minCellWidth + spacing)))
+        let rowCount = (count + fit - 1) / fit
+        return (count + rowCount - 1) / rowCount
+    }
+
+    private func rows(width: CGFloat, count: Int) -> [Range<Int>] {
+        let columns = columns(width: width, count: count)
+        return stride(from: 0, to: count, by: columns).map { $0..<min($0 + columns, count) }
+    }
+
+    private func cellWidth(_ width: CGFloat, cells: Int) -> CGFloat {
+        (width - spacing * CGFloat(cells - 1)) / CGFloat(cells)
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        guard !subviews.isEmpty else { return .zero }
+        let width: CGFloat
+        if let proposed = proposal.width, proposed.isFinite {
+            width = proposed
+        } else {
+            // Ideal: one row
+            let widest = subviews.map { $0.sizeThatFits(.unspecified).width }.max() ?? 0
+            width = max(widest, minCellWidth) * CGFloat(subviews.count) + spacing * CGFloat(subviews.count - 1)
+        }
+        let rows = rows(width: width, count: subviews.count)
+        let height = rows.reduce(CGFloat(0)) { total, row in
+            let cell = cellWidth(width, cells: row.count)
+            let rowHeight = row.map { subviews[$0].sizeThatFits(ProposedViewSize(width: cell, height: nil)).height }.max() ?? 0
+            return total + rowHeight
+        } + spacing * CGFloat(rows.count - 1)
+        return CGSize(width: width, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var y = bounds.minY
+        for row in rows(width: bounds.width, count: subviews.count) {
+            let cell = cellWidth(bounds.width, cells: row.count)
+            let cellProposal = ProposedViewSize(width: cell, height: nil)
+            let rowHeight = row.map { subviews[$0].sizeThatFits(cellProposal).height }.max() ?? 0
+            for (column, index) in row.enumerated() {
+                subviews[index].place(
+                    at: CGPoint(x: bounds.minX + CGFloat(column) * (cell + spacing), y: y),
+                    proposal: ProposedViewSize(width: cell, height: rowHeight)
+                )
+            }
+            y += rowHeight + spacing
+        }
     }
 }
 
@@ -81,7 +271,7 @@ struct SectionCard<Content: View, Accessory: View>: View {
     let tint: Color
     @ViewBuilder var accessory: () -> Accessory
     @ViewBuilder var content: () -> Content
-    @Environment(\.sectionScope) private var scope
+    @Environment(\.isCompactLayout) private var isCompact
 
     init(
         _ title: String,
@@ -98,34 +288,24 @@ struct SectionCard<Content: View, Accessory: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 8) {
-                Image(systemName: systemImage)
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundColor(tint)
-                    .frame(width: 22, height: 22)
-                    .background(tint.opacity(0.15), in: RoundedRectangle(cornerRadius: 6))
-                Text(title.uppercased())
-                    .font(.system(size: 12, weight: .semibold))
-                    .tracking(1.2)
-                    .foregroundColor(ThemeColors.text)
-                if let scope {
-                    Text(scope)
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(ThemeColors.secondaryText)
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 2)
-                        .background(ThemeColors.raised, in: Capsule())
-                        .help("This section belongs to \(scope) only")
+        VStack(alignment: .leading, spacing: isCompact ? 10 : 14) {
+            // The accessory goes under the title when they don't fit on one line
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 8) {
+                    titleLabel
+                    Spacer(minLength: 8)
+                    accessory()
                 }
-                Spacer(minLength: 8)
-                accessory()
+                VStack(alignment: .leading, spacing: 10) {
+                    titleLabel
+                    accessory()
+                }
             }
 
             content()
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(ThemeMetrics.padding)
+        .padding(isCompact ? 12 : ThemeMetrics.padding)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(ThemeColors.secondaryBackground, in: RoundedRectangle(cornerRadius: ThemeMetrics.cornerRadius))
         .overlay(
@@ -133,6 +313,20 @@ struct SectionCard<Content: View, Accessory: View>: View {
                 .strokeBorder(ThemeColors.stroke)
         )
         .environment(\.controlTint, tint)
+    }
+
+    private var titleLabel: some View {
+        HStack(spacing: 8) {
+            Image(systemName: systemImage)
+                .font(.system(size: 11, weight: .bold))
+                .foregroundColor(tint)
+                .frame(width: 22, height: 22)
+                .background(tint.opacity(0.15), in: RoundedRectangle(cornerRadius: 6))
+            Text(title.uppercased())
+                .font(.system(size: 12, weight: .semibold))
+                .tracking(1.2)
+                .foregroundColor(ThemeColors.text)
+        }
     }
 }
 
@@ -164,6 +358,7 @@ struct ControlDivider: View {
             .fill(ThemeColors.stroke)
             .frame(width: 1)
             .padding(.vertical, 4)
+            .layoutValue(key: IsControlDivider.self, value: true)
     }
 }
 
@@ -180,6 +375,7 @@ struct ChipButtonStyle: ButtonStyle {
         configuration.label
             .font(.system(size: 11, weight: .semibold))
             .lineLimit(1)
+            .minimumScaleFactor(0.85)
             .padding(.horizontal, 8)
             .frame(maxWidth: expands ? .infinity : nil, minHeight: 26)
             .foregroundColor(isSelected ? .black.opacity(0.85) : ThemeColors.text.opacity(0.85))
@@ -203,9 +399,11 @@ struct ChipPicker<Item: Hashable>: View {
     let selection: Item?
     let label: (Item) -> String
     let onSelect: (Item) -> Void
+    /// Narrowest chip in a compact column
+    var compactMinCellWidth: CGFloat = 56
 
     var body: some View {
-        HStack(spacing: 4) {
+        ChipRow(compactMinCellWidth: compactMinCellWidth) {
             ForEach(items, id: \.self) { item in
                 Button(label(item)) { onSelect(item) }
                     .buttonStyle(ChipButtonStyle(isSelected: item == selection))

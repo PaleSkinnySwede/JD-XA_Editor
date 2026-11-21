@@ -3,23 +3,27 @@ import SwiftUI
 struct ModLFOView: View {
     @ObservedObject var viewModel: ModLFOViewModel
 
+    @Environment(\.isCompactLayout) private var isCompact
+
     var body: some View {
         SectionCard("Mod LFO", systemImage: "wave.3.right.circle", tint: SectionTint.modLFO, accessory: {
             ChipToggle(title: "Sync", systemImage: "metronome", isOn: $viewModel.isTempoSync)
                 .help("Sync the Mod LFO rate to the tempo")
         }) {
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: isCompact ? 10 : 14) {
                 ChipPicker(LFOShape.allCases, selection: $viewModel.selectedShape) { $0.name }
 
-                HStack(alignment: .top, spacing: 14) {
-                    LFORateKnob(
-                        isTempoSync: viewModel.isTempoSync,
-                        rate: $viewModel.rate,
-                        syncedRate: $viewModel.lfoRate
-                    )
+                ControlGroupRow(spacing: 14) {
+                    HStack(alignment: .top, spacing: 14) {
+                        LFORateKnob(
+                            isTempoSync: viewModel.isTempoSync,
+                            rate: $viewModel.rate,
+                            syncedRate: $viewModel.lfoRate
+                        )
 
-                    VerticalSlider(title: "Rate Ctrl", value: $viewModel.rateControl, range: -63...63, height: 90, defaultValue: 0)
-                        .help("How much the modulation wheel changes the Mod LFO rate")
+                        VerticalSlider(title: "Rate Ctrl", value: $viewModel.rateControl, range: -63...63, height: 90, defaultValue: 0)
+                            .help("How much the modulation wheel changes the Mod LFO rate")
+                    }
 
                     ControlDivider()
 
@@ -32,7 +36,6 @@ struct ModLFOView: View {
                         }
                     }
                 }
-                .fixedSize(horizontal: false, vertical: true)
             }
         }
     }

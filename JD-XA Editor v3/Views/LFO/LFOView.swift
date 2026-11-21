@@ -3,6 +3,8 @@ import SwiftUI
 struct LFOView: View {
     @ObservedObject var viewModel: LFOViewModel
 
+    @Environment(\.isCompactLayout) private var isCompact
+
     var body: some View {
         SectionCard("LFO", systemImage: "wave.3.right", tint: SectionTint.lfo, accessory: {
             HStack(spacing: 4) {
@@ -12,17 +14,19 @@ struct LFOView: View {
                     .help("Sync the LFO rate to the tempo")
             }
         }) {
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: isCompact ? 10 : 14) {
                 ChipPicker(LFOShape.allCases, selection: $viewModel.selectedShape) { $0.name }
 
-                HStack(alignment: .top, spacing: 14) {
-                    LFORateKnob(
-                        isTempoSync: viewModel.isTempoSync,
-                        rate: $viewModel.rate,
-                        syncedRate: $viewModel.lfoRate
-                    )
+                ControlGroupRow(spacing: 14) {
+                    HStack(alignment: .top, spacing: 14) {
+                        LFORateKnob(
+                            isTempoSync: viewModel.isTempoSync,
+                            rate: $viewModel.rate,
+                            syncedRate: $viewModel.lfoRate
+                        )
 
-                    VerticalSlider(title: "Fade", value: $viewModel.fadeTime, range: 0...127, height: 90, defaultValue: 0)
+                        VerticalSlider(title: "Fade", value: $viewModel.fadeTime, range: 0...127, height: 90, defaultValue: 0)
+                    }
 
                     ControlDivider()
 
@@ -35,7 +39,6 @@ struct LFOView: View {
                         }
                     }
                 }
-                .fixedSize(horizontal: false, vertical: true)
             }
         }
     }

@@ -10,7 +10,6 @@
 		2601F0D12D20A3DE00F2EB53 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2601F0D02D20A3DE00F2EB53 /* Theme.swift */; };
 		2601F0D52D20A42F00F2EB53 /* DigitalPart.view.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2601F0D42D20A42F00F2EB53 /* DigitalPart.view.swift */; };
 		2601F0D72D20A47F00F2EB53 /* DigitalPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2601F0D62D20A47F00F2EB53 /* DigitalPanelView.swift */; };
-		2601F0D92D20A49E00F2EB53 /* DigitalPartialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2601F0D82D20A49E00F2EB53 /* DigitalPartialView.swift */; };
 		2601F0DB2D20A4D000F2EB53 /* OscillatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2601F0DA2D20A4D000F2EB53 /* OscillatorView.swift */; };
 		2601F0DD2D20A78C00F2EB53 /* WaveformPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2601F0DC2D20A78C00F2EB53 /* WaveformPicker.swift */; };
 		2601F0DF2D20B59B00F2EB53 /* PCMWaveform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2601F0DE2D20B59B00F2EB53 /* PCMWaveform.swift */; };
@@ -60,7 +59,6 @@
 		2601F0D02D20A3DE00F2EB53 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Theme.swift; path = Views/DigitalPanel/Theme.swift; sourceTree = "<group>"; };
 		2601F0D42D20A42F00F2EB53 /* DigitalPart.view.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DigitalPart.view.swift; path = Views/DigitalPanel/DigitalPart.view.swift; sourceTree = "<group>"; };
 		2601F0D62D20A47F00F2EB53 /* DigitalPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DigitalPanelView.swift; path = Views/DigitalPanel/DigitalPanelView.swift; sourceTree = "<group>"; };
-		2601F0D82D20A49E00F2EB53 /* DigitalPartialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DigitalPartialView.swift; path = Views/DigitalPanel/DigitalPartialView.swift; sourceTree = "<group>"; };
 		2601F0DA2D20A4D000F2EB53 /* OscillatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OscillatorView.swift; path = Views/DigitalPanel/Components/OscillatorView.swift; sourceTree = "<group>"; };
 		2601F0DC2D20A78C00F2EB53 /* WaveformPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WaveformPicker.swift; path = Views/DigitalPanel/Components/WaveformPicker.swift; sourceTree = "<group>"; };
 		2601F0DE2D20B59B00F2EB53 /* PCMWaveform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PCMWaveform.swift; path = Models/PCMWaveform.swift; sourceTree = "<group>"; };
@@ -153,7 +151,6 @@
 				2601F0D02D20A3DE00F2EB53 /* Theme.swift */,
 				2601F0D62D20A47F00F2EB53 /* DigitalPanelView.swift */,
 				2601F0D42D20A42F00F2EB53 /* DigitalPart.view.swift */,
-				2601F0D82D20A49E00F2EB53 /* DigitalPartialView.swift */,
 				26E11AD12D2351C200F565B8 /* LFOContainerView.swift */,
 				26D50C632D22AC0A00DFE13D /* LFOShape.swift */,
 				26D50C652D22AC2600DFE13D /* LFOView.swift */,
@@ -343,7 +340,6 @@
 				26987EB02D1F575D003DC173 /* ContentView.swift in Sources */,
 				26987EAE2D1F575D003DC173 /* JD_XA_Editor_v3App.swift in Sources */,
 				2601F0DF2D20B59B00F2EB53 /* PCMWaveform.swift in Sources */,
-				2601F0D92D20A49E00F2EB53 /* DigitalPartialView.swift in Sources */,
 				26987EDB2D1F6163003DC173 /* JDXATestView.swift in Sources */,
 				26E11AD02D23519A00F565B8 /* ModLFOView.swift in Sources */,
 				26D50C642D22AC0A00DFE13D /* LFOShape.swift in Sources */,

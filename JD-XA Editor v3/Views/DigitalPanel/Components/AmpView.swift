@@ -83,7 +83,7 @@ struct AmpView: View {
 
     var body: some View {
         SectionCard("Amp", systemImage: "speaker.wave.2", tint: SectionTint.amp) {
-            HStack(alignment: .top, spacing: 16) {
+            ControlGroupRow {
                 ControlGroupBox("Output") {
                     HStack(alignment: .top, spacing: 4) {
                         DialKnob(title: "Level", value: $viewModel.level, range: 0...127,
@@ -124,7 +124,6 @@ struct AmpView: View {
 
                 Spacer(minLength: 0)
             }
-            .fixedSize(horizontal: false, vertical: true)
         }
     }
 }
