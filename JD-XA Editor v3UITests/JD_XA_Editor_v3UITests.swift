@@ -30,6 +30,26 @@ final class JD_XA_Editor_v3UITests: XCTestCase {
         // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
 
+    /// ⌘1–⌘3 select a partial and must not flip its on/off switch.
+    func testCommandNumberSelectsPartialWithoutTogglingIt() throws {
+        let app = XCUIApplication()
+        app.launch()
+        let window = app.windows.firstMatch
+        XCTAssertTrue(window.staticTexts["Editing Partial 1"].waitForExistence(timeout: 5))
+
+        for partial in [2, 3, 1] {
+            window.typeKey("\(partial)", modifierFlags: .command)
+            XCTAssertTrue(window.staticTexts["Editing Partial \(partial)"].waitForExistence(timeout: 2),
+                          "⌘\(partial) should select Partial \(partial)")
+        }
+
+        for partial in 1...3 {
+            let toggle = window.descendants(matching: .any)["partial-\(partial)-switch"]
+            XCTAssertTrue(toggle.exists, "Partial \(partial) switch not found")
+            XCTAssertEqual(toggle.value as? Int, 1, "Partial \(partial) should still be on")
+        }
+    }
+
     func testLaunchPerformance() throws {
         if #available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 7.0, *) {
             // This measures how long it takes to launch your application.
