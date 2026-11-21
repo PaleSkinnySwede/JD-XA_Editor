@@ -1,12 +1,17 @@
 import SwiftUI
 
-/// Every section of one partial on a single page, laid out like the
-/// synth's panel and its signal flow: OSC, FILTER, AMP, then the two LFOs.
+/// Every section of one partial on a single page. Each partial has its own
+/// OSC, LFO, Mod LFO, FILTER and AMP, so every card is tagged with the
+/// partial it belongs to.
 struct DigitalPartialView: View {
     @ObservedObject var state: DigitalPartialState
 
+    private var scope: String { "Partial \(state.partialNumber)" }
+
     var body: some View {
         VStack(spacing: 12) {
+            PartialScopeHeader(partialNumber: state.partialNumber)
+
             if !state.isEnabled {
                 PartialOffBanner(partialNumber: state.partialNumber) {
                     state.isEnabled = true
@@ -15,13 +20,38 @@ struct DigitalPartialView: View {
 
             OscillatorView(viewModel: state.oscillator)
 
+            LFOContainerView(lfo: state.lfo, modLFO: state.modLFO)
+
             FilterView(viewModel: state.filter)
 
             AmpView(viewModel: state.amp)
-
-            LFOContainerView(lfo: state.lfo, modLFO: state.modLFO)
         }
+        .environment(\.sectionScope, scope)
         .foregroundColor(ThemeColors.text)
+    }
+}
+
+/// Says which partial the cards below edit.
+private struct PartialScopeHeader: View {
+    let partialNumber: Int
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Text("\(partialNumber)")
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundColor(.black.opacity(0.85))
+                .frame(width: 24, height: 24)
+                .background(ThemeColors.accent, in: RoundedRectangle(cornerRadius: 6))
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Editing Partial \(partialNumber)")
+                    .font(.system(size: 13, weight: .semibold))
+                Text("Each partial has its own oscillator, LFOs, filter and amp. Switch partials above or with ⌘1–⌘3.")
+                    .font(.system(size: 11))
+                    .foregroundColor(ThemeColors.secondaryText)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 4)
     }
 }
 

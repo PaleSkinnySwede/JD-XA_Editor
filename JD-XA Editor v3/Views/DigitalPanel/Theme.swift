@@ -57,6 +57,21 @@ extension EnvironmentValues {
     }
 }
 
+// MARK: - Section scope
+
+private struct SectionScopeKey: EnvironmentKey {
+    static let defaultValue: String? = nil
+}
+
+extension EnvironmentValues {
+    /// What the cards below belong to, such as "Partial 1". `SectionCard`
+    /// shows it as a tag next to its title.
+    var sectionScope: String? {
+        get { self[SectionScopeKey.self] }
+        set { self[SectionScopeKey.self] = newValue }
+    }
+}
+
 // MARK: - Section card
 
 /// A rounded panel with a colored title, one per synth section.
@@ -66,6 +81,7 @@ struct SectionCard<Content: View, Accessory: View>: View {
     let tint: Color
     @ViewBuilder var accessory: () -> Accessory
     @ViewBuilder var content: () -> Content
+    @Environment(\.sectionScope) private var scope
 
     init(
         _ title: String,
@@ -93,6 +109,15 @@ struct SectionCard<Content: View, Accessory: View>: View {
                     .font(.system(size: 12, weight: .semibold))
                     .tracking(1.2)
                     .foregroundColor(ThemeColors.text)
+                if let scope {
+                    Text(scope)
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(ThemeColors.secondaryText)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 2)
+                        .background(ThemeColors.raised, in: Capsule())
+                        .help("This section belongs to \(scope) only")
+                }
                 Spacer(minLength: 8)
                 accessory()
             }
