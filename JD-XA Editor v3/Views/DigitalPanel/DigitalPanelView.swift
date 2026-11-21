@@ -9,6 +9,7 @@ final class DigitalPartialState: ObservableObject {
     let partialNumber: Int
     let oscillator: OscillatorViewModel
     let filter: FilterViewModel
+    let amp: AmpViewModel
     let lfo = LFOViewModel()
     let modLFO = ModLFOViewModel()
 
@@ -24,6 +25,11 @@ final class DigitalPartialState: ObservableObject {
             midiService: midiService
         )
         self.filter = FilterViewModel(
+            partNumber: partNumber,
+            partialNumber: partialNumber,
+            midiService: midiService
+        )
+        self.amp = AmpViewModel(
             partNumber: partNumber,
             partialNumber: partialNumber,
             midiService: midiService

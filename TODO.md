@@ -20,7 +20,6 @@ Where the project stands and what comes next. Last reviewed: 2026-11-13.
 - Everything in the LFO and Mod LFO views.
 
 **Not started**
-- Amp section (placeholder card in `DigitalPartialView.swift`).
 - Analog part, drums, effects, program/common parameters.
 - Reading patches from the synth (RQ1) and syncing the UI.
 - Saving/loading patches.
@@ -49,7 +48,7 @@ Where the project stands and what comes next. Last reviewed: 2026-11-13.
 3. [ ] Wire the remaining OSC controls (PW Shift, Super Saw, Gain, pitch env).
 4. [ ] Wire LFO and Mod LFO to MIDI (addresses already in `MIDIParameters.swift`). `LFOViewModel`/`ModLFOViewModel` live in `DigitalPartialState`, which knows the part/partial.
 5. [x] Build the Filter card: type, slope, cutoff, resonance, HPF, envelope (depth + ADSR with graph), key follow, velocity and aftertouch sensitivity. All sent to the synth (`FilterView.swift`). *Value ranges follow the SuperNATURAL synth layout (mode 0–7, ±63 as 1–127, key follow 54–74); check them against the MIDI Implementation doc.*
-6. [ ] Build the Amp card (addresses already defined; placeholder card in `DigitalPartialView`). Reuse `EnvelopeGraph` for its ADSR. Level aftertouch sens (`fltLevelATSens`, 0x31) belongs here.
+6. [x] Build the Amp card: level, pan, envelope (ADSR with graph), key follow, velocity and aftertouch sensitivity. All sent to the synth (`AmpView.swift`). *Same encoding caveat as the filter; pan is sent as 0–127 with center 64.*
 7. [ ] Wire the Partial On/Off toggle.
 
 ## Later

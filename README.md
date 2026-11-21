@@ -2,7 +2,7 @@
 
 A native macOS editor for the **Roland JD-XA** synthesizer, written in Swift and SwiftUI. It talks to the JD-XA over MIDI with Roland System Exclusive (SysEx) messages, so you can change sound parameters from your computer instead of on the synth's front panel.
 
-> **Status:** Early development. MIDI connectivity, SysEx message building and a test panel work. The Digital part editor is partly built: the oscillator, filter and LFO sections exist, and the amp section is a placeholder.
+> **Status:** Early development. MIDI connectivity, SysEx message building and a test panel work. The Digital part editor is partly built: the oscillator, filter, amp and LFO sections exist; the LFOs aren't sent to the synth yet.
 
 ## Features
 
@@ -23,6 +23,7 @@ A native macOS editor for the **Roland JD-XA** synthesizer, written in Swift and
   - Every section of the partial on one scrolling page, color-coded like the hardware panel: OSC, FILTER, AMP, LFO and MOD LFO
   - Edits are kept per part and partial while you move around the app
   - Filter controls: type (LPF, HPF, BPF, …), slope, cutoff, resonance, HPF, envelope with a live ADSR graph, and key follow, velocity and aftertouch sensitivity
+  - Amp controls: level, pan, envelope with a live ADSR graph, and key follow, velocity and aftertouch sensitivity
   - Oscillator controls: waveform, PCM wave picker, pitch, detune, PWM depth, pulse width and pitch envelope
   - LFO and Mod LFO views with shape selection and tempo-synced rates
   - Custom controls: dial knobs and vertical sliders
@@ -97,7 +98,7 @@ Parameter addresses come from the Roland JD-XA MIDI Implementation document.
 
 ## Roadmap
 
-- Amp section of the Digital partial editor
+- Send the LFO and Mod LFO settings to the synth
 - Analog part editor
 - Effects editor
 - Reading the current patch from the synth (RQ1) and syncing the UI

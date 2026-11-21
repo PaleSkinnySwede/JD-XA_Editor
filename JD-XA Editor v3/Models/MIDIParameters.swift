@@ -68,6 +68,8 @@ extension DigitalPartParameter {
         static let ampReleaseTime: [UInt8] = [0x1A]
         static let ampPan: [UInt8] = [0x1B]
         static let ampKeyFollow: [UInt8] = [0x3C]
+        /// Level aftertouch sensitivity. Same address as `fltLevelATSens`; it sets the amp level.
+        static let ampLevelATSens: [UInt8] = fltLevelATSens
         
         // LFO parameters
         static let lfoShape: [UInt8] = [0x1C]
