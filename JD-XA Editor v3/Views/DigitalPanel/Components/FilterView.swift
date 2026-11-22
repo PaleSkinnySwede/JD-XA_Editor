@@ -2,21 +2,23 @@ import SwiftUI
 
 // MARK: - Values
 
-/// Digital partial filter type (Filter Mode, 0–7)
+/// Digital partial filter type (Filter Mode, 0–7).
+/// Cases are declared in display order (allCases drives the buttons);
+/// the raw values are the synth's parameter values.
 enum FilterMode: UInt8, CaseIterable {
     case bypass = 0
     case lpf = 1
-    case hpf = 2
-    case bpf = 3
-    case pkg = 4
     case lpf2 = 5
     case lpf3 = 6
+    case hpf = 2
+    case bpf = 3
     case lpf4 = 7
+    case pkg = 4
 
     var name: String {
         switch self {
         case .bypass: return "BYPASS"
-        case .lpf: return "LPF"
+        case .lpf: return "LPF1"
         case .hpf: return "HPF"
         case .bpf: return "BPF"
         case .pkg: return "PKG"
